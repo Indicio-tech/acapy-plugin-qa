@@ -1,16 +1,10 @@
-import logging
-from typing import Dict, List, Optional
+"""Version definitions for this protocol."""
 
-from aries_cloudagent.messaging.agent_message import AgentMessage
-
-LOGGER = logging.getLogger(__name__)
-PROTOCOL = "https://github.com/hyperledger/aries-toolbox/docs/admin-qa/0.1"
-
-class QuestionHandler(AgentMessage):
-    message_type = f"{PROTOCOL}/question"
-    question_text: str
-    question_detail: Optional[str] = None
-    valid_responses: List[Dict]
-
-    async def handle():
-        pass
+versions = [
+    {
+        "major_version": 1,
+        "minimum_minor_version": 0,
+        "current_minor_version": 0,
+        "path": "v1_0",
+    }
+]
