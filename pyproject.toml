@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "acapy-plugin-qa"
+version = "0.1.0"
+description = "Q&A Protocol Plugin for ACA-Py"
+authors = ["Daniel Bluhm <dbluhm@pm.me>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.6.9"
+aries-cloudagent = "^0.7.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
