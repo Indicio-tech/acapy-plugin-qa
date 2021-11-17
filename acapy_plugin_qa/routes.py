@@ -1,5 +1,5 @@
 import logging
-improt re
+import re
 
 from acapy_cloudagent.core.event_bus import Event, EventBus
 from acapy_cloudagent.core.profile import Profile
