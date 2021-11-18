@@ -27,6 +27,7 @@ class QAExchangeRecord(BaseRecord):
     RECORD_ID_NAME = "question_answer_id"
     TAG_NAMES = {
         "connection_id",
+        "thread_id",
     }
 
     def __init__(
@@ -63,14 +64,17 @@ class QAExchangeRecord(BaseRecord):
         cls,
         session: ProfileSession,
         connection_id: str,
+        thread_id: str,
     ) -> "QAExchangeRecord":
         """Retrieve QAExchangeRecord connection_id.
         Args:
             session: the profile session to use
             connection_id: the connection id by which to filter
+            thread_id: the thread id by which to filter
         """
         tag_filter = {
             **{"connection_id": connection_id for _ in [""] if connection_id},
+            **{"thread_id": thread_id for _ in [""] if thread_id},
         }
 
         result = await cls.query(session, tag_filter)
