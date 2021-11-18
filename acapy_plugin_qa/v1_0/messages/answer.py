@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, ValidationError, pre_dump
 from typing import Optional
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
 from aries_cloudagent.messaging.valid import UUIDFour
@@ -38,6 +38,13 @@ class Answer(AgentMessage):
 
 class AnswerSchema(AgentMessageSchema):
     """Schema for Answer message."""
+
+    @pre_dump
+    def check_thread_deco(self, obj: AgentMessage, **kwargs):
+        """Thread decorator, and its thid and pthid, are mandatory."""
+        if not obj._decorators.get("~thread", {}).keys() >= {"thid"}:
+            raise ValidationError("Missing required field(s) in thread decorator")
+        return obj
 
     class Meta:
         model_class = ANSWER
