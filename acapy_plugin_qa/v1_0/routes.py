@@ -1,5 +1,6 @@
 import logging
 import re
+from aiohttp import web
 
 from aries_cloudagent.core.event_bus import Event, EventBus
 from aries_cloudagent.core.profile import Profile
@@ -13,3 +14,8 @@ def register_events(event_bus: EventBus):
 	"""Register to handle events."""
 	pass
 
+async def test_route(request: web.Request):
+	return web.json_response({"success": True})
+
+async def register(app: web.Application):
+	app.add_routes([web.get("/qa", test_route)])
