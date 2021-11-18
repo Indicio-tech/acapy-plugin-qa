@@ -23,7 +23,7 @@ class Answer(AgentMessage):
         thread_id: str,
         question_text: str,
         question_detail: Optional[str] = None,
-        response_index: int,
+        response: str,
         **kwargs,
     ):
 
@@ -33,7 +33,7 @@ class Answer(AgentMessage):
         self.thread_id = thread_id
         self.question_text = question_text
         self.question_detail = question_detail
-        self.response_index = response_index
+        self.response = response
 
 
 class AnswerSchema(AgentMessageSchema):
@@ -59,12 +59,7 @@ class AnswerSchema(AgentMessageSchema):
         required=False,
         description=(
             "This is optional fine-print giving context"
-            "to the question and its various answers."
+            + "to the question and its various answers."
         ),
     )
-    response_index = fields.Int(
-        required=True,
-        description=(
-            "The index of the chosen response from the list of valid responses."
-        ),
-    )
+    response = fields.Int(required=True, description=("The response to the question."))
