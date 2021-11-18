@@ -18,7 +18,6 @@ class Question(AgentMessage):
     def __init__(
         self,
         *,
-        thread_id: str,
         question_text: str,
         question_detail: Optional[str] = None,
         valid_responses: List[Dict], **kwargs,
@@ -27,25 +26,16 @@ class Question(AgentMessage):
         """Initialize question message."""
         super().__init__(**kwargs)
 
-        self.thread_id = thread_id
         self.question_text = question_text
         self.question_detail = question_detail
         self.valid_responses = valid_responses
-
 
 class QuestionSchema(AgentMessageSchema):
     """Schema for Question message."""
 
     class Meta:
-        model_class = QUESTION
+        model_class = Question
 
-    thread_id = fields.Str(
-        required=True,
-        description=(
-            "Thread ID used for connecting answer to question."
-        ),
-        example=UUIDFour.EXAMPLE,
-    )
     question_text = fields.Str(
         required=True,
         description=(
@@ -58,7 +48,8 @@ class QuestionSchema(AgentMessageSchema):
             "This is optional fine-print giving context to the question and its various answers."
         )
     )
-    valid_responses = fields.Str(
+    valid_responses = fields.List(
+        fields.Mapping(),
         required=True,
         description=(
             "A list of dictionaries indicating possible valid responses to the question."
