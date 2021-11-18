@@ -7,8 +7,6 @@ ENV WAIT_VERSION 2.7.2
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
 RUN chmod +x /wait
 
-# COPY acapy-backchannel acapy-backchannel
-# COPY echo-agent echo-agent
 COPY pyproject.toml .
 COPY poetry.lock .
 RUN poetry install --no-dev
@@ -16,4 +14,3 @@ RUN poetry install --no-dev
 COPY tests/* tests/
 
 ENTRYPOINT ["/bin/sh", "-c", "/wait && poetry run pytest \"$@\"", "--"]
-
