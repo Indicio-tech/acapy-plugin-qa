@@ -1,17 +1,16 @@
 """Store question details until answer is received."""
 
-from typing import Optional, Sequence
+from typing import Optional
 
-from marshmallow import fields
+from marshmallow import fields, ValidationError, pre_dump
 from marshmallow.utils import EXCLUDE
-
 
 from aries_cloudagent.core.profile import ProfileSession
 from aries_cloudagent.messaging.models.base_record import BaseRecord, BaseRecordSchema
 from aries_cloudagent.messaging.valid import UUID4
 from aries_cloudagent.storage.error import StorageNotFoundError, StorageDuplicateError
+from aries_cloudagent.messaging.agent_message import AgentMessage
 
-from ..messages.question import Question
 from ..messages.answer import Answer
 
 
@@ -83,17 +82,14 @@ class QAExchangeRecord(BaseRecord):
                 "More than one QAExchangeRecord was found for the given IDs"
             )
         if not result:
-            raise StorageNotFoundError(
-                "No QAExchangeRecord found for the given IDs"
-            )
+            raise StorageNotFoundError("No QAExchangeRecord found for the given IDs")
         return result[0]
 
     def to_message(self):
         """Return an answer constructed from this record."""
         if not self.thread_id:
             raise ValueError(
-                "No thread ID set on QAExchangeRecord, "
-                "cannot create message"
+                "No thread ID set on QAExchangeRecord, " "cannot create message"
             )
         return Answer(
             thread_id=self.thread_id,
@@ -103,6 +99,13 @@ class QAExchangeRecord(BaseRecord):
 
 class QAExchangeRecordSchema(BaseRecordSchema):
     """Question Answer Record Schema."""
+
+    @pre_dump
+    def check_thread_deco(self, obj: AgentMessage, **kwargs):
+        """Thread decorator, and its thid and pthid, are mandatory."""
+        if not obj._decorators.get("~thread", {}).keys() >= {"thid"}:
+            raise ValidationError("Missing required field(s) in thread decorator")
+        return obj
 
     class Meta:
         """QAExchangeRecordSchema Meta."""
@@ -119,9 +122,7 @@ class QAExchangeRecordSchema(BaseRecordSchema):
         **UUID4,
     )
     thread_id = fields.Str(
-        description=(
-            "Thread ID of the QAExchangeRecord message thread"
-        ),
+        description=("Thread ID of the QAExchangeRecord message thread"),
         required=False,
         **UUID4,
     )
