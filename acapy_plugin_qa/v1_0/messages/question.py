@@ -4,7 +4,7 @@ from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageS
 from aries_cloudagent.messaging.valid import UUIDFour
 from ..message_types import PROTOCOL_PACKAGE, QUESTION
 
-HANDLER_CLASS = f"{PROTOCOL_PACKAGE}.placeholder"
+HANDLER_CLASS = f"{PROTOCOL_PACKAGE}.handlers.question_handler"
 
 class Question(AgentMessage):
     """Class representing the question message"""
@@ -61,5 +61,4 @@ class QuestionSchema(AgentMessageSchema):
             "A list of dictionaries indicating possible valid responses to the question."
         )
     )
-    
     
