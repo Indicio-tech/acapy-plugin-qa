@@ -2,8 +2,10 @@ import logging
 from aries_cloudagent.core.profile import Profile
 from aries_cloudagent.core.error import BaseError
 
+
 class QAManagerError(BaseError):
     """Q&A Manager error"""
+
 
 class QAManager:
     """Class for managing Q&A operations"""
@@ -12,10 +14,9 @@ class QAManager:
         """Initialize a QAManager"""
         self.profile = profile
         self.logger = logging.getLogger(__name__)
-        
+
     async def answer_question():
         pass
 
     async def store_question():
         pass
-    
