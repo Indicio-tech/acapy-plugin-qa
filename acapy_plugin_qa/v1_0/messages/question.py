@@ -39,7 +39,7 @@ class QuestionSchema(AgentMessageSchema):
     @pre_dump
     def check_thread_deco(self, obj: AgentMessage, **kwargs):
         """Thread decorator, and its thid and pthid, are mandatory."""
-        if not obj._decorators.get("~thread", {}).keys() >= {"thid"}:
+        if not obj._decorators.to_dict().get("~thread", {}).keys() >= {"thid"}:
             raise ValidationError("Missing required field(s) in thread decorator")
         return obj
 
