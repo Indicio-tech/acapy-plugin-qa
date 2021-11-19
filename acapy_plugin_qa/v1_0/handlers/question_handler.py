@@ -4,6 +4,7 @@ from aries_cloudagent.messaging.responder import BaseResponder
 
 from ..messages.question import Question
 
+
 class QuestionHandler(BaseHandler):
     """Handler for Question message."""
 
@@ -17,23 +18,20 @@ class QuestionHandler(BaseHandler):
         # await responder.send_reply(context.message)
         assert isinstance(context.message, Question)
         self._logger.debug(
-            "Received question in thread %s "
-            "with text: %s",
+            "Received question in thread %s " "with text: %s",
             context.message._thread,
             context.message.question_text,
         )
         # Emit a webhook
-        # TODO: check this check
-        if context.settings.get("revocation.monitor_notification"):
-            await context.profile.notify(
-                self.WEBHOOK_TOPIC,
-                {
-                    "thread_id": context.message._thread,
-                    "question_text": context.message.question_text,
-                    "question_detail": context.message.question_detail,
-                    "valid_responses": context.message.valid_responses,
-                },
-            )
+        await context.profile.notify(
+            self.WEBHOOK_TOPIC,
+            {
+                "thread_id": context.message._thread,
+                "question_text": context.message.question_text,
+                "question_detail": context.message.question_detail,
+                "valid_responses": context.message.valid_responses,
+            },
+        )
 
         # Emit an event
         await context.profile.notify(

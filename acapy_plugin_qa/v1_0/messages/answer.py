@@ -1,5 +1,4 @@
 from marshmallow import fields, ValidationError, pre_dump
-from typing import Optional
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
 from aries_cloudagent.messaging.valid import UUIDFour
 from ..message_types import PROTOCOL_PACKAGE, ANSWER
@@ -21,8 +20,6 @@ class Answer(AgentMessage):
         self,
         *,
         thread_id: str,
-        question_text: str,
-        question_detail: Optional[str] = None,
         response: str,
         **kwargs,
     ):
@@ -31,8 +28,6 @@ class Answer(AgentMessage):
         super().__init__(**kwargs)
 
         self.thread_id = thread_id
-        self.question_text = question_text
-        self.question_detail = question_detail
         self.response = response
 
 
@@ -53,13 +48,5 @@ class AnswerSchema(AgentMessageSchema):
         required=True,
         description=("Thread ID used for connecting answer to question."),
         example=UUIDFour.EXAMPLE,
-    )
-    question_text = fields.Str(required=True, description=("The text of the question."))
-    question_detail = fields.Str(
-        required=False,
-        description=(
-            "This is optional fine-print giving context"
-            + "to the question and its various answers."
-        ),
     )
     response = fields.Int(required=True, description=("The response to the question."))
