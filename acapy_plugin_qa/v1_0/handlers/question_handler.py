@@ -22,6 +22,12 @@ class QuestionHandler(BaseHandler):
             context.message._thread,
             context.message.question_text,
         )
+
+        # When not delegating question to
+        # another connection, just emit on webhooks
+
+        # 
+
         # Emit a webhook
         await context.profile.notify(
             self.WEBHOOK_TOPIC,
@@ -43,3 +49,6 @@ class QuestionHandler(BaseHandler):
                 "valid_responses": context.message.valid_responses,
             },
         )
+
+
+        # input for the delegation

@@ -35,3 +35,14 @@ class AnswerHandler(BaseHandler):
             self.RECIEVED_TOPIC,
             {"thread_id": context.message._thread, "respnse": context.message.response},
         )
+
+    # When not delegating, just emit on webhooks
+
+    # When delegating, event subscriber checks whether
+    # answer comes from a parent thread and prepares
+    # another answer message to send to original questioner
+
+
+
+    # check the thread information and sends an answer message
+    # to the connection that originally asked the question
