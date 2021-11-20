@@ -9,7 +9,7 @@ class QuestionHandler(BaseHandler):
     """Handler for Question message."""
 
     # TODO: check these variables
-    RECIEVED_TOPIC = "acapy::questionanswer::received"
+    RECEIVED_TOPIC = "acapy::questionanswer::received"
     WEBHOOK_TOPIC = "acapy::webhook::questionanswer"
 
     async def handle(self, context: RequestContext, responder: BaseResponder):
@@ -22,11 +22,6 @@ class QuestionHandler(BaseHandler):
             context.message._thread,
             context.message.question_text,
         )
-
-        # When not delegating question to
-        # another connection, just emit on webhooks
-
-        # 
 
         # Emit a webhook
         await context.profile.notify(
@@ -41,7 +36,7 @@ class QuestionHandler(BaseHandler):
 
         # Emit an event
         await context.profile.notify(
-            self.RECIEVED_TOPIC,
+            self.RECEIVED_TOPIC,
             {
                 "thread_id": context.message._thread,
                 "question_text": context.message.question_text,
@@ -49,6 +44,3 @@ class QuestionHandler(BaseHandler):
                 "valid_responses": context.message.valid_responses,
             },
         )
-
-
-        # input for the delegation
