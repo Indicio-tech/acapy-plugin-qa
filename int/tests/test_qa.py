@@ -2,6 +2,7 @@
 
 from echo_agent.client import EchoClient
 from echo_agent.models import ConnectionInfo
+# from aries_cloudagent.messaging.responder import MockResponder
 import pytest
 
 import logging
@@ -10,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_send_and_receive(echo: EchoClient, connection: ConnectionInfo):
+async def test_send_question(echo: EchoClient, connection: ConnectionInfo):
     """Testing the Status Request Message with no queued messages."""
     await echo.send_message(connection, {"@type": "https://didcomm.org/discover-features/1.0/query", "query": "*"})
     response = await echo.get_message(connection)
@@ -22,10 +23,47 @@ async def test_send_and_receive(echo: EchoClient, connection: ConnectionInfo):
         connection,
         {
             "@type": "https://didcomm.org/questionanswer/1.0/question",
+            "@id": "MockTestRequestID",
+            "question_text": "Are you a test agent?",
+            "question_detail": "Verifying that the Q&A Handler works via integration tests",
+            "valid_responses": [
+                {"text": "yes"},
+                {"text": "no"}
+            ],
+            "~thread": {
+                "thid": "MockTestThreadID",
+            }
+        },
+    )
+    response = await echo.get_message(connection)
+    print(response)
+
+    assert response["@type"] == (
+        "https://didcomm.org/questionanswer/1.0/answer"
+    )
+
+@pytest.mark.skip
+@pytest.mark.asyncio
+async def test_send_answer(echo: EchoClient, connection: ConnectionInfo):
+    """Testing the Status Request Message with no queued messages."""
+    # await echo.send_message(connection, {"@type": "https://didcomm.org/discover-features/1.0/query", "query": "*"})
+    # response = await echo.get_message(connection)
+    # import json
+    # protocols = [r["pid"] for r in response["protocols"]]
+    # protocols.sort()
+    # print(json.dumps(protocols, indent=4, sort_keys=True))
+    await echo.send_message(
+        connection,
+        {
+            "@type": "https://didcomm.org/questionanswer/1.0/answer",
+            "response": "yes",
+            "~thread": {
+                "thid": "ad285eef-a5e4-4cea-9a40-12f3294d1826"
+            }
         },
     )
     response = await echo.get_message(connection)
     print(response)
     assert response["@type"] == (
-        "https://didcomm.org/questionanswer/1.0/question"
+        "https://didcomm.org/questionanswer/1.0/answer"
     )
