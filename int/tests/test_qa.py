@@ -36,9 +36,6 @@ async def test_send_question(echo: EchoClient, backchannel_endpoint: str, connec
                 {"text": "yes"},
                 {"text": "no"}
             ],
-            # "~thread": {
-            #     "thid": "MockTestThreadID",
-            # }
         },
     )
     response = await echo.get_message(connection)
