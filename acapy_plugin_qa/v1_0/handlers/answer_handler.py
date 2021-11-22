@@ -9,7 +9,7 @@ class AnswerHandler(BaseHandler):
     """Handler for Answer message."""
 
     # TODO: check these variables
-    RECIEVED_TOPIC = "acapy::questionanswer::received"
+    RECEIVED_TOPIC = "acapy::questionanswer::received"
     WEBHOOK_TOPIC = "acapy::webhook::questionanswer"
 
     async def handle(self, context: RequestContext, responder: BaseResponder):
@@ -27,11 +27,17 @@ class AnswerHandler(BaseHandler):
         # Emit a webhook
         await context.profile.notify(
             self.WEBHOOK_TOPIC,
-            {"thread_id": context.message._thread, "respnse": context.message.response},
+            {
+                "thread_id": context.message._thread,
+                "response": context.message.response,
+            },
         )
 
         # Emit an event
         await context.profile.notify(
-            self.RECIEVED_TOPIC,
-            {"thread_id": context.message._thread, "respnse": context.message.response},
+            self.RECEIVED_TOPIC,
+            {
+                "thread_id": context.message._thread,
+                "response": context.message.response,
+            },
         )
