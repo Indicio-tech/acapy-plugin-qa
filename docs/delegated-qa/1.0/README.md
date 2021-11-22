@@ -1,0 +1,1 @@
+# delegated-qa/1.0
