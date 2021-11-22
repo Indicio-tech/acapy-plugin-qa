@@ -34,6 +34,7 @@ class QAExchangeRecord(BaseRecord):
         *,
         question_answer_id: str = None,
         thread_id: str = None,
+        pthid: str = None,
         connection_id: str = None,
         valid_responses: list = None,
         question_text: str = None,
@@ -43,6 +44,7 @@ class QAExchangeRecord(BaseRecord):
         """Construct record."""
         super().__init__(question_answer_id, **kwargs)
         self.thread_id = thread_id
+        self.pthid = pthid
         self.connection_id = connection_id
         self.valid_responses = valid_responses
         self.question_text = question_text
