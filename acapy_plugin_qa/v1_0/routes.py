@@ -228,7 +228,7 @@ async def send_question(request: web. BaseRequest):
             question_detail=params["question_detail"],
             valid_responses=params["valid_responses"]
         )
-        manager = QAManager(context)
+        manager = QAManager(context.profile)
         manager.store_question()  # Store the question
         msg.assign_thread_id(params["@id"])  # At this time, the thid is required for serialization
         await outbound_handler(msg, connection_id=connection_id)
