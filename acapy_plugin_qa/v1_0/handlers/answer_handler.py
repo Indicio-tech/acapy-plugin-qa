@@ -20,7 +20,7 @@ class AnswerHandler(BaseHandler):
         await self.qa_notify(context.profile, context.message)
 
     @staticmethod
-    def qa_notify(profile: Profile, answer: Answer):
+    async def qa_notify(self, profile: Profile, answer: Answer):
         # print(context.message)
         # await responder.send_reply(context.message)
         assert isinstance(answer, Answer)
@@ -30,7 +30,7 @@ class AnswerHandler(BaseHandler):
             answer.response,
         )
         # Emit a webhook
-        await context.profile.notify(
+        await profile.notify(
             self.WEBHOOK_TOPIC,
             {
                 "thread_id": answer._thread,
@@ -39,7 +39,7 @@ class AnswerHandler(BaseHandler):
         )
 
         # Emit an event
-        await context.profile.notify(
+        await profile.notify(
             self.RECEIVED_TOPIC,
             {
                 "thread_id": answer._thread,
