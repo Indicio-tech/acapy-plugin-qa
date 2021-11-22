@@ -1,10 +1,15 @@
 import logging
 import re
 from aiohttp import web
+from typing import Sequence
 
 from aries_cloudagent.core.event_bus import Event, EventBus
-from aries_cloudagent.core.profile import Profile
+from aries_cloudagent.core.profile import Profile, ProfileSession
 from aries_cloudagent.messaging.responder import BaseResponder
+from aries_cloudagent.storage.base import BaseStorage
+from aries_cloudagent.storage.record import StorageRecord
+from aries_cloudagent.connections.models.conn_record import ConnRecord
+import json
 
 from .messages.question import Question
 from .messages.answer import Answer
@@ -31,7 +36,7 @@ def register_events(event_bus: EventBus):
     )
 
 
-async def on_question_received(profile: Profile, event: Event):
+async def on_question_received(profile: Profile, event: Event, session: ProfileSession):
     """Handle question received event."""
 
     # check delegation
@@ -44,22 +49,36 @@ async def on_question_received(profile: Profile, event: Event):
         profile.settings.get("plugin_config", {}).get("qa", {}).get("metadata_value")
     )
 
-    # TODO: create proper metadata query
-    # TODO: allow for returning more than one connection
-    if key == "role" and value == "admin":
-        thread_id = event.payload["@id"]
-        question_text = event.payload["question_text"]
-        question_detail = event.payload["question_detail"]
-        valid_responses = event.payload["valid_responses"]
-
-        rewrapped_question = Question(
-            thread_id,
-            question_text,
-            question_detail,
-            valid_responses,
+    storage: BaseStorage = session.inject(BaseStorage)
+    records: Sequence[StorageRecord] = await storage.find_all_records(
+        ConnRecord.RECORD_TYPE_METADATA, {key: value}
+    )
+    records = [
+        record
+        for record in records
+        if json.loads(record.key) == "role"
+        if json.loads(record.value) == "admin"
+    ]
+    results = []
+    for record in records:
+        results.append(
+            await ConnRecord.retrieve_by_id(session, record.tags["connection_id"])
         )
-        responder = profile.inject(BaseResponder)
-        await responder.send(rewrapped_question, connection_id=connection_id)
+
+    thread_id = event.payload["@id"]
+    question_text = event.payload["question_text"]
+    question_detail = event.payload["question_detail"]
+    valid_responses = event.payload["valid_responses"]
+
+    rewrapped_question = Question(
+        thread_id,
+        question_text,
+        question_detail,
+        valid_responses,
+    )
+    responder = profile.inject(BaseResponder)
+    for result in results:
+        await responder.send(rewrapped_question, connection_id=result.connection_id)
 
 
 async def on_answer_received(profile: Profile, event: Event):
@@ -118,6 +137,8 @@ class QuestionSchema(AgentMessageSchema):
             "A list of dictionaries indicating possible valid responses to the question."
         ),
     )
+
+
 @docs(
     tags=["QAProtocol"],
     summary="Question & Answer Protocol",
@@ -141,10 +162,13 @@ async def qa_features(request: web.BaseRequest):
     # results = registry.protocols_matching_query(request.query.get("query", "*"))
     results = request.query.get("question_text")
     q = Question(
-    	question_text=request.query.get("question_text"),
-    	valid_responses={"valid_responses": {"text": k} for k in request.query.getall("valid_responses") }
-    	# {"results": {k: {} for k in results}}
-    	)
+        question_text=request.query.get("question_text"),
+        valid_responses={
+            "valid_responses": {"text": k}
+            for k in request.query.getall("valid_responses")
+        }
+        # {"results": {k: {} for k in results}}
+    )
     # q.assign_thread_id(request.query.get("@id") or uuid.uuid4())
     q.assign_thread_from(q)
 
