@@ -38,13 +38,6 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-def backchannel():
-    """Yield backchannel client."""
-    endpoint = os.environ.get("ADMIN_ENDPOINT")
-    yield Client(base_url=endpoint)
-
-
-@pytest.fixture(scope="session")
 def echo_seed():
     yield hashlib.sha256(b"acapy-pickup-int-test-runner").hexdigest()[:32]
 
@@ -55,8 +48,19 @@ def agent_seed():
 
 
 @pytest.fixture(scope="session")
+def backchannel_endpoint():
+    yield os.environ.get("ADMIN_ENDPOINT")
+
+
+@pytest.fixture(scope="session")
 def echo_endpoint():
     yield os.environ.get("ECHO_ENDPOINT")
+
+
+@pytest.fixture(scope="session")
+def backchannel(backchannel_endpoint):
+    """Yield backchannel client."""
+    yield Client(base_url=backchannel_endpoint)
 
 
 @pytest.fixture(scope="session")

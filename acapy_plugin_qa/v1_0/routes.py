@@ -6,17 +6,17 @@ from aries_cloudagent.core.event_bus import Event, EventBus
 from aries_cloudagent.core.profile import Profile
 from aries_cloudagent.messaging.responder import BaseResponder
 
-from .messages.question import Question
-from .messages.answer import Answer
+from .messages.question import Question, QuestionSchema
+from .messages.answer import Answer, AnswerSchema
 
 from aiohttp_apispec import docs, request_schema, response_schema, match_info_schema
 from .message_types import SPEC_URI
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
-from .messages.question import Question, QuestionSchema
 from marshmallow import fields, ValidationError, pre_dump
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
 from aries_cloudagent.connections.models.conn_record import ConnRecord
+from .handlers.answer_handler import AnswerHandler
 import uuid
 
 LOGGER = logging.getLogger(__name__)
@@ -126,11 +126,28 @@ class QuestionRequestSchema(AgentMessageSchema):
     )
 
 
+class AnswerRequestSchema(AgentMessageSchema):
+    """Schema for Question message."""
+
+    class Meta:
+        model_class = Answer
+
+    response = fields.Str(required=True, description=("The text of the question."))
+
+
 class BasicConnIdMatchInfoSchema(OpenAPISchema):
     """Path parameters and validators for request taking connection id."""
 
     conn_id = fields.Str(
         description="Connection identifier", required=True, example=UUIDFour.EXAMPLE
+    )
+
+
+class BasicThidMatchInfoSchema(OpenAPISchema):
+    """Path parameters and validators for request taking connection id."""
+
+    thread_id = fields.Str(
+        description="Thread identifier", required=True, example=UUIDFour.EXAMPLE
     )
 
 @docs(
@@ -140,7 +157,7 @@ class BasicConnIdMatchInfoSchema(OpenAPISchema):
 @match_info_schema(BasicConnIdMatchInfoSchema())
 @request_schema(QuestionSchema())
 @response_schema(QuestionSchema(), 200, description="")
-async def send_question(request: web.BaseRequest):
+async def send_question(request: web. BaseRequest):
     """
     Request handler for inspecting supported protocols.
 
@@ -156,18 +173,6 @@ async def send_question(request: web.BaseRequest):
     connection_id = request.match_info["conn_id"]
     outbound_handler = request["outbound_message_router"]
     params = await request.json()
-    print(request)
-    # registry: ProtocolRegistry = context.inject(ProtocolRegistry)
-    # results = registry.protocols_matching_query(request.query.get("query", "*"))
-    # results = request.query.get("question_text")
-    # q = Question(
-    # 	question_text=request.query.get("question_text"),
-    # 	valid_responses={"valid_responses": {"text": k} for k in request.query.getall("valid_responses") }
-    # 	# {"results": {k: {} for k in results}}
-    # 	)
-    # q.assign_thread_id(request.query.get("@id") or uuid.uuid4())
-    # q.assign_thread_from(q)
-
 
     try:
         async with context.session() as session:
@@ -183,7 +188,57 @@ async def send_question(request: web.BaseRequest):
             question_detail=params["question_detail"],
             valid_responses=params["valid_responses"]
         )
+        manager = QAManager(context)
+        manager.store_question()  # Store the question
         msg.assign_thread_id(params["@id"])  # At this time, the thid is required for serialization
+        await outbound_handler(msg, connection_id=connection_id)
+
+    return web.json_response({})
+
+    return web.json_response(msg.serialize())
+
+@docs(
+    tags=["QAProtocol"],
+    summary="Question & Answer Protocol",
+)
+# @match_info_schema(BasicThidMatchInfoSchema())
+# @request_schema(AnswerSchema())
+@response_schema(AnswerSchema(), 200, description="")
+async def send_answer(request: web.BaseRequest):
+    """
+    Request handler for inspecting supported protocols.
+
+    Args:
+        request: aiohttp request object
+
+    Returns:
+        The diclosed protocols response
+
+    """
+    # Extract question data sent to us (the Questioner)
+    print(request)
+    print(dict(request))
+    # return web.json_response({})
+    context: AdminRequestContext = request["context"]
+    thread_id = request.match_info["thread_id"]
+    outbound_handler = request["outbound_message_router"]
+    params = await request.json()
+    manager = QAManager(context)
+
+    try:
+        async with context.session() as session:
+            record = await manager.retrieve_by_id(thread_id)
+            connection = await ConnRecord.retrieve_by_id(session, connection_id)
+    except StorageNotFoundError as err:
+        raise web.HTTPNotFound(reason=err.roll_up) from err
+
+    if connection.is_ready:
+        # Setup a question object to pass on to the responder
+        msg = Answer(
+            response=params["response"],
+        )
+        msg.assign_thread_id(msg._thread.thid, thread_id)  # At this time, the thid is required for serialization
+        AnswerHandler.qa_notify(context.profile, msg)
         await outbound_handler(msg, connection_id=connection_id)
 
     return web.json_response({})
@@ -194,7 +249,10 @@ async def send_question(request: web.BaseRequest):
 async def register(app: web.Application):
     """Register routes."""
 
-    app.add_routes([web.post("/qa/{conn_id}/send-question", send_question)])
+    app.add_routes([
+        web.post("/qa/{conn_id}/send-question", send_question),
+        web.post("/qa/{thread_id}/send-answer", send_answer),
+        ])
 
 
 def post_process_routes(app: web.Application):
