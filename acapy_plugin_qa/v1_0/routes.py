@@ -21,15 +21,18 @@ import uuid
 
 LOGGER = logging.getLogger(__name__)
 
+QA_EVENT_PREFIX = "acapy::questionanswer"
+QUESTION_RECEIVED_EVENT = "received"
+ANSWER_RECEIVED_EVENT = "received"
 
 def register_events(event_bus: EventBus):
     """Register to handle events."""
     event_bus.subscribe(
-        re.compile(f"^{QA_EVENT_PREFIX}{QUESTION_RECEIVED_EVENT}.*"),
+        re.compile(f"^{QA_EVENT_PREFIX}::{QUESTION_RECEIVED_EVENT}.*"),
         on_question_received,
     )
     event_bus.subscribe(
-        re.compile(f"^{QA_EVENT_PREFIX}{ANSWER_RECEIVED_EVENT}.*"),
+        re.compile(f"^{QA_EVENT_PREFIX}::{ANSWER_RECEIVED_EVENT}.*"),
         on_answer_received,
     )
 
