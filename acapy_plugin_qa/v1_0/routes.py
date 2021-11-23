@@ -42,12 +42,14 @@ def register_events(event_bus: EventBus):
     )
 
 
-async def on_question_received(profile: Profile, event: Event, session: ProfileSession):
+async def on_question_received(profile: Profile, event: Event):
     """Handle question received event."""
 
     # check delegation
     if not profile.settings.get("plugin_config", {}).get("qa", {}).get("delegate"):
         return
+
+    session = profile.session()
 
     # check to whom to delegate
     key = profile.settings.get("plugin_config", {}).get("qa", {}).get("metadata_key")
