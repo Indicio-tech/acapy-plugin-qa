@@ -21,7 +21,6 @@ class Answer(AgentMessage):
     def __init__(
         self,
         *,
-        thread_id: str,
         response: str,
         **kwargs,
     ):
@@ -29,7 +28,6 @@ class Answer(AgentMessage):
         """Initialize answer message."""
         super().__init__(**kwargs)
 
-        self.thread_id = thread_id
         self.response = response
 
 
@@ -44,11 +42,6 @@ class AnswerSchema(AgentMessageSchema):
         return obj
 
     class Meta:
-        model_class = ANSWER
+        model_class = Answer
 
-    thread_id = fields.Str(
-        required=True,
-        description=("Thread ID used for connecting answer to question."),
-        example=UUIDFour.EXAMPLE,
-    )
     response = fields.Str(required=True, description=("The response to the question."))

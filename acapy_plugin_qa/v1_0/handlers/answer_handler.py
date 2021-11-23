@@ -17,6 +17,13 @@ class AnswerHandler(BaseHandler):
         """Handle answer message."""
 
         """Handle question message."""
+        assert isinstance(context.message, Answer)
+        self._logger.debug(
+            "Received answer in thread %s " "with text: %s",
+            context.message._thread,
+            context.message.response,
+        )
+
         await self.qa_notify(context.profile, context.message)
 
     @classmethod
@@ -24,11 +31,7 @@ class AnswerHandler(BaseHandler):
         # print(context.message)
         # await responder.send_reply(context.message)
         assert isinstance(answer, Answer)
-        cls._logger.debug(
-            "Received answer in thread %s " "with text: %s",
-            answer._thread,
-            answer.response,
-        )
+
         # Emit a webhook
         await profile.notify(
             cls.WEBHOOK_TOPIC,

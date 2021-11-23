@@ -91,7 +91,7 @@ async def on_question_received(profile: Profile, event: Event):
         await responder.send(rewrapped_question, connection_id=result.connection_id)
 
 
-async def on_answer_received(profile: Profile, event: Event, session: ProfileSession):
+async def on_answer_received(profile: Profile, event: Event):
     """Handle answer received event."""
 
     # check delegation
@@ -101,6 +101,8 @@ async def on_answer_received(profile: Profile, event: Event, session: ProfileSes
     # check pthid
     if not event.payload["pthid"]:
         return
+
+    session = profile.session()
 
     manager = QAManager(profile)
     record = await QAExchangeRecord.query_by_ids(
@@ -120,7 +122,7 @@ async def on_answer_received(profile: Profile, event: Event, session: ProfileSes
         await responder.send(rewrapped_answer, connection_id=record.connection_id)
 
         await manager.delete_record(
-            profile.session, thread_id=event.payload["thread_id"]
+            session, thread_id=event.payload["thread_id"]
         )
 
 
@@ -290,7 +292,6 @@ async def send_answer(request: web.BaseRequest):
     if connection.is_ready:
         # Setup a question object to pass on to the responder
         msg = Answer(
-            thread_id=record.thread_id,
             response=params["response"],
         )
         msg.assign_thread_id(record.thread_id)
