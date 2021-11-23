@@ -3,6 +3,7 @@ from aries_cloudagent.messaging.request_context import RequestContext
 from aries_cloudagent.messaging.responder import BaseResponder
 
 from ..messages.question import Question
+from ..manager import QAManager
 
 
 class QuestionHandler(BaseHandler):
@@ -22,6 +23,9 @@ class QuestionHandler(BaseHandler):
             context.message._thread,
             context.message.question_text,
         )
+
+        qa_manager = QAManager(context.profile)
+        await qa_manager.store_question(context.message, context.connection_record.connection_id)
 
         # Emit a webhook
         await context.profile.notify(
