@@ -1,4 +1,4 @@
-from marshmallow import fields, ValidationError, pre_dump
+from marshmallow import fields
 from typing import Dict, List, Optional
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
 from ..message_types import PROTOCOL_PACKAGE, QUESTION

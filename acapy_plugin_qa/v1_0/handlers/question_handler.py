@@ -8,7 +8,6 @@ from ..messages.question import Question
 class QuestionHandler(BaseHandler):
     """Handler for Question message."""
 
-    # TODO: check these variables
     RECEIVED_TOPIC = "acapy::questionanswer::received"
     WEBHOOK_TOPIC = "acapy::webhook::questionanswer"
 
