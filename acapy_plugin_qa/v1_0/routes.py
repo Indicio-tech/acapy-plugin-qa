@@ -9,7 +9,7 @@ from typing import Sequence
 from aries_cloudagent.admin.request_context import AdminRequestContext
 from aries_cloudagent.connections.models.conn_record import ConnRecord
 from aries_cloudagent.core.event_bus import Event, EventBus
-from aries_cloudagent.core.profile import Profile, ProfileSession
+from aries_cloudagent.core.profile import Profile
 from aries_cloudagent.messaging.responder import BaseResponder
 from aries_cloudagent.messaging.agent_message import AgentMessageSchema
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
