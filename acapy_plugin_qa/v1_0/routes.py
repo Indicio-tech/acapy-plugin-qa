@@ -28,8 +28,8 @@ from .models.qa_exchange_record import QAExchangeRecord
 LOGGER = logging.getLogger(__name__)
 
 QA_EVENT_PREFIX = "acapy::questionanswer"
-QUESTION_RECEIVED_EVENT = "received"
-ANSWER_RECEIVED_EVENT = "received"
+QUESTION_RECEIVED_EVENT = "question_received"
+ANSWER_RECEIVED_EVENT = "answer_received"
 
 
 def register_events(event_bus: EventBus):
@@ -102,7 +102,10 @@ async def on_answer_received(profile: Profile, event: Event, session: ProfileSes
     if not event.payload["pthid"]:
         return
 
-    record = QAExchangeRecord.query_by_ids(session, thread_id=event.payload["pthid"])
+    manager = QAManager(profile)
+    record = await QAExchangeRecord.query_by_ids(
+        session, thread_id=event.payload["thread_id"]
+    )
     if record:
         thread_id = event.payload["@id"]
         pthid = event.payload["thread_id"]
@@ -115,6 +118,10 @@ async def on_answer_received(profile: Profile, event: Event, session: ProfileSes
         )
         responder = profile.inject(BaseResponder)
         await responder.send(rewrapped_answer, connection_id=record.connection_id)
+
+        await manager.delete_record(
+            profile.session, thread_id=event.payload["thread_id"]
+        )
 
 
 class QuestionRequestSchema(AgentMessageSchema):

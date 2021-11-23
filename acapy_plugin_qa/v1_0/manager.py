@@ -19,9 +19,6 @@ class QAManager:
         self.profile = profile
         self.logger = logging.getLogger(__name__)
 
-    async def answer_question(self):
-        pass
-
     async def store_question(self, question: Question, connection_id: str):
         qa_exchange_record = QAExchangeRecord(
             # question_answer_id = question._id,
@@ -39,3 +36,7 @@ class QAManager:
 
     async def retrieve_by_id(self, session, thread_id):
         return await QAExchangeRecord.retrieve_by_id(session, thread_id)
+
+    async def delete_record(self, session, thread_id):
+        record = await self.retrieve_by_id(session, thread_id)
+        record.delete_record()

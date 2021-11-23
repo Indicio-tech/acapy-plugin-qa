@@ -9,7 +9,7 @@ from ..manager import QAManager
 class QuestionHandler(BaseHandler):
     """Handler for Question message."""
 
-    RECEIVED_TOPIC = "acapy::questionanswer::received"
+    RECEIVED_TOPIC = "acapy::questionanswer::question_received"
     WEBHOOK_TOPIC = "acapy::webhook::questionanswer"
 
     async def handle(self, context: RequestContext, responder: BaseResponder):

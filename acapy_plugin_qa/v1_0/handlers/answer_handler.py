@@ -10,7 +10,7 @@ class AnswerHandler(BaseHandler):
     """Handler for Answer message."""
 
     # TODO: check these variables
-    RECEIVED_TOPIC = "acapy::questionanswer::received"
+    RECEIVED_TOPIC = "acapy::questionanswer::answer_received"
     WEBHOOK_TOPIC = "acapy::webhook::questionanswer"
 
     async def handle(self, context: RequestContext, responder: BaseResponder):
