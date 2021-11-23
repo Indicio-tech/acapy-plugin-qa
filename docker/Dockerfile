@@ -19,6 +19,7 @@ RUN ln -s $(poetry env info -p)/lib/python3.6/site-packages site-packages
 
 COPY docker/default.yml .
 COPY acapy_plugin_qa/ acapy_plugin_qa/
+COPY acapy_plugin_delegated_qa/ acapy_plugin_delegated_qa/
 
 ENTRYPOINT ["/bin/bash", "-c", "poetry run aca-py \"$@\"", "--"]
 CMD ["start", "--arg-file", "default.yml"]

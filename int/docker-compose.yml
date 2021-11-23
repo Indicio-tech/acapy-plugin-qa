@@ -15,6 +15,7 @@ services:
         --admin 0.0.0.0 3001 --admin-insecure-mode 
         --no-ledger
         --plugin acapy_plugin_qa
+        --plugin acapy_plugin_delegated_qa
         --log-level debug
 
   echo:
