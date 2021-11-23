@@ -58,7 +58,7 @@ class QAExchangeRecord(BaseRecord):
     @property
     def record_value(self) -> dict:
         """Return record value."""
-        return {prop: getattr(self, prop) for prop in ("thread_id", "question_text")}
+        return {prop: getattr(self, prop) for prop in ("thread_id", "question_text", "question_detail", "valid_responses")}
 
     @classmethod
     async def query_by_ids(
@@ -102,12 +102,12 @@ class QAExchangeRecord(BaseRecord):
 class QAExchangeRecordSchema(BaseRecordSchema):
     """Question Answer Record Schema."""
 
-    @pre_dump
-    def check_thread_deco(self, obj: AgentMessage, **kwargs):
-        """Thread decorator, and its thid and pthid, are mandatory."""
-        if not obj._decorators.get("~thread", {}).keys() >= {"thid"}:
-            raise ValidationError("Missing required field(s) in thread decorator")
-        return obj
+    # @pre_dump
+    # def check_thread_deco(self, obj: AgentMessage, **kwargs):
+    #     """Thread decorator, and its thid and pthid, are mandatory."""
+    #     if not obj._decorators.get("~thread", {}).keys() >= {"thid"}:
+    #         raise ValidationError("Missing required field(s) in thread decorator")
+    #     return obj
 
     class Meta:
         """QAExchangeRecordSchema Meta."""
@@ -123,8 +123,28 @@ class QAExchangeRecordSchema(BaseRecordSchema):
         required=False,
         **UUID4,
     )
+    _id = fields.Str(
+        description=("Thread ID of the QAExchangeRecord message thread"),
+        required=False,
+        **UUID4,
+    )
     thread_id = fields.Str(
         description=("Thread ID of the QAExchangeRecord message thread"),
         required=False,
         **UUID4,
+    )
+    question_text = fields.Str(required=True, description=("The text of the question."))
+    question_detail = fields.Str(
+        required=False,
+        description=(
+            "This is optional fine-print giving context "
+            "to the question and its various answers."
+        ),
+    )
+    valid_responses = fields.List(
+        fields.Mapping(),
+        required=True,
+        description=(
+            "A list of dictionaries indicating possible valid responses to the question."
+        ),
     )
