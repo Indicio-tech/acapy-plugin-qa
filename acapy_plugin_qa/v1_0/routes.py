@@ -13,22 +13,22 @@ import json
 
 from .messages.question import Question, QuestionSchema
 from .messages.answer import Answer, AnswerSchema
+from acapy_plugin_qa.v1_0.models.qa_exchange_record import QAExchangeRecord
 
 from aiohttp_apispec import docs, request_schema, response_schema, match_info_schema
 from .message_types import SPEC_URI
-from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
-from marshmallow import fields, ValidationError, pre_dump
+from aries_cloudagent.messaging.agent_message import AgentMessageSchema
+from marshmallow import fields
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
-from aries_cloudagent.connections.models.conn_record import ConnRecord
 from .handlers.answer_handler import AnswerHandler
-import uuid
 
 LOGGER = logging.getLogger(__name__)
 
 QA_EVENT_PREFIX = "acapy::questionanswer"
 QUESTION_RECEIVED_EVENT = "received"
 ANSWER_RECEIVED_EVENT = "received"
+
 
 def register_events(event_bus: EventBus):
     """Register to handle events."""
@@ -87,7 +87,7 @@ async def on_question_received(profile: Profile, event: Event, session: ProfileS
         await responder.send(rewrapped_question, connection_id=result.connection_id)
 
 
-async def on_answer_received(profile: Profile, event: Event):
+async def on_answer_received(profile: Profile, event: Event, session: ProfileSession):
     """Handle answer received event."""
 
     # check delegation
@@ -98,8 +98,8 @@ async def on_answer_received(profile: Profile, event: Event):
     if not event.payload["pthid"]:
         return
 
-    # TODO: properly lookup QAExchangeRecord by thread_id == pthid:
-    if qa_exchange_record.pthid == event.payload["@id"]:
+    record = QAExchangeRecord.query_by_ids(session, thread_id=event.payload["pthid"])
+    if record:
         thread_id = event.payload["@id"]
         pthid = event.payload["thread_id"]
         response = event.payload["response"]
@@ -110,9 +110,7 @@ async def on_answer_received(profile: Profile, event: Event):
             response,
         )
         responder = profile.inject(BaseResponder)
-        await responder.send(
-            rewrapped_answer, connection_id=qa_exchange_record.connection_id
-        )
+        await responder.send(rewrapped_answer, connection_id=record.connection_id)
 
 
 # async def test_route(request: web.Request):
@@ -169,6 +167,7 @@ class BasicThidMatchInfoSchema(OpenAPISchema):
         description="Thread identifier", required=True, example=UUIDFour.EXAMPLE
     )
 
+
 @docs(
     tags=["QAProtocol"],
     summary="Question & Answer Protocol",
@@ -176,7 +175,7 @@ class BasicThidMatchInfoSchema(OpenAPISchema):
 @match_info_schema(BasicConnIdMatchInfoSchema())
 @request_schema(QuestionSchema())
 @response_schema(QuestionSchema(), 200, description="")
-async def send_question(request: web. BaseRequest):
+async def send_question(request: web.BaseRequest):
     """
     Request handler for inspecting supported protocols.
 
@@ -213,7 +212,6 @@ async def send_question(request: web. BaseRequest):
     # q.assign_thread_id(request.query.get("@id") or uuid.uuid4())
     # q.assign_thread_from(q)
 
-
     try:
         async with context.session() as session:
             connection = await ConnRecord.retrieve_by_id(session, connection_id)
@@ -226,16 +224,19 @@ async def send_question(request: web. BaseRequest):
             _id=params["@id"],
             question_text=params["question_text"],
             question_detail=params["question_detail"],
-            valid_responses=params["valid_responses"]
+            valid_responses=params["valid_responses"],
         )
         manager = QAManager(context.profile)
         manager.store_question()  # Store the question
-        msg.assign_thread_id(params["@id"])  # At this time, the thid is required for serialization
+        msg.assign_thread_id(
+            params["@id"]
+        )  # At this time, the thid is required for serialization
         await outbound_handler(msg, connection_id=connection_id)
 
     return web.json_response({})
 
     return web.json_response(msg.serialize())
+
 
 @docs(
     tags=["QAProtocol"],
@@ -277,7 +278,9 @@ async def send_answer(request: web.BaseRequest):
         msg = Answer(
             response=params["response"],
         )
-        msg.assign_thread_id(msg._thread.thid, thread_id)  # At this time, the thid is required for serialization
+        msg.assign_thread_id(
+            msg._thread.thid, thread_id
+        )  # At this time, the thid is required for serialization
         AnswerHandler.qa_notify(context.profile, msg)
         await outbound_handler(msg, connection_id=connection_id)
 
@@ -289,10 +292,12 @@ async def send_answer(request: web.BaseRequest):
 async def register(app: web.Application):
     """Register routes."""
 
-    app.add_routes([
-        web.post("/qa/{conn_id}/send-question", send_question),
-        web.post("/qa/{thread_id}/send-answer", send_answer),
-        ])
+    app.add_routes(
+        [
+            web.post("/qa/{conn_id}/send-question", send_question),
+            web.post("/qa/{thread_id}/send-answer", send_answer),
+        ]
+    )
 
 
 def post_process_routes(app: web.Application):
