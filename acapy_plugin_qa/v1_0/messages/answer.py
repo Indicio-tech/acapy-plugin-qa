@@ -49,4 +49,4 @@ class AnswerSchema(AgentMessageSchema):
         description=("Thread ID used for connecting answer to question."),
         example=UUIDFour.EXAMPLE,
     )
-    response = fields.Int(required=True, description=("The response to the question."))
+    response = fields.Str(required=True, description=("The response to the question."))
