@@ -12,7 +12,7 @@ from aries_cloudagent.connections.models.conn_record import ConnRecord
 import json
 
 from .messages.question import Question, QuestionSchema
-from .messages.answer import Answer, AnswerSchema
+from .messages.answer import Answer
 from acapy_plugin_qa.v1_0.models.qa_exchange_record import QAExchangeRecord
 
 from aiohttp_apispec import docs, request_schema, response_schema, match_info_schema
@@ -23,9 +23,8 @@ from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
 from .handlers.answer_handler import AnswerHandler
 from .manager import QAManager
-from .models.qa_exchange_record import QAExchangeRecord
 from aries_cloudagent.storage.error import StorageNotFoundError
-import uuid
+from aries_cloudagent.admin.request_context import AdminRequestContext
 
 LOGGER = logging.getLogger(__name__)
 

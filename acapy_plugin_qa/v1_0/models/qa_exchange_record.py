@@ -2,14 +2,13 @@
 
 from typing import Optional
 
-from marshmallow import fields, ValidationError, pre_dump
+from marshmallow import fields
 from marshmallow.utils import EXCLUDE
 
 from aries_cloudagent.core.profile import ProfileSession
 from aries_cloudagent.messaging.models.base_record import BaseRecord, BaseRecordSchema
 from aries_cloudagent.messaging.valid import UUID4
 from aries_cloudagent.storage.error import StorageNotFoundError, StorageDuplicateError
-from aries_cloudagent.messaging.agent_message import AgentMessage
 
 from ..messages.answer import Answer
 
