@@ -1,6 +1,8 @@
 from marshmallow import fields
 from typing import Dict, List, Optional
+
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
+
 from ..message_types import PROTOCOL_PACKAGE, QUESTION
 
 HANDLER_CLASS = f"{PROTOCOL_PACKAGE}.handlers.question_handler.QuestionHandler"

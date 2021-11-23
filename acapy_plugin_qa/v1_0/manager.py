@@ -1,6 +1,8 @@
 import logging
+
 from aries_cloudagent.core.profile import Profile
 from aries_cloudagent.core.error import BaseError
+
 from .messages.question import Question
 from .models.qa_exchange_record import QAExchangeRecord
 

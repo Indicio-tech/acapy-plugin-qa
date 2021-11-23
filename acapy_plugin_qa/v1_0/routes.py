@@ -1,30 +1,29 @@
+import json
 import logging
 import re
 from aiohttp import web
+from aiohttp_apispec import docs, request_schema, response_schema, match_info_schema
+from marshmallow import fields
 from typing import Sequence
 
+from aries_cloudagent.admin.request_context import AdminRequestContext
+from aries_cloudagent.connections.models.conn_record import ConnRecord
 from aries_cloudagent.core.event_bus import Event, EventBus
 from aries_cloudagent.core.profile import Profile, ProfileSession
 from aries_cloudagent.messaging.responder import BaseResponder
-from aries_cloudagent.storage.base import BaseStorage
-from aries_cloudagent.storage.record import StorageRecord
-from aries_cloudagent.connections.models.conn_record import ConnRecord
-import json
-
-from .messages.question import Question, QuestionSchema
-from .messages.answer import Answer
-from acapy_plugin_qa.v1_0.models.qa_exchange_record import QAExchangeRecord
-
-from aiohttp_apispec import docs, request_schema, response_schema, match_info_schema
-from .message_types import SPEC_URI
 from aries_cloudagent.messaging.agent_message import AgentMessageSchema
-from marshmallow import fields
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
+from aries_cloudagent.storage.base import BaseStorage
+from aries_cloudagent.storage.record import StorageRecord
+from aries_cloudagent.storage.error import StorageNotFoundError
+
 from .handlers.answer_handler import AnswerHandler
 from .manager import QAManager
-from aries_cloudagent.storage.error import StorageNotFoundError
-from aries_cloudagent.admin.request_context import AdminRequestContext
+from .messages.question import Question, QuestionSchema
+from .messages.answer import Answer
+from .message_types import SPEC_URI
+from .models.qa_exchange_record import QAExchangeRecord
 
 LOGGER = logging.getLogger(__name__)
 

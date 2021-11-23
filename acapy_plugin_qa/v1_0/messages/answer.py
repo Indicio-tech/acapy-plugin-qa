@@ -1,6 +1,8 @@
 from marshmallow import fields, ValidationError, pre_dump
+
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
 from aries_cloudagent.messaging.valid import UUIDFour
+
 from ..message_types import PROTOCOL_PACKAGE, ANSWER
 
 HANDLER_CLASS = f"{PROTOCOL_PACKAGE}.handlers.answer_handler.AnswerHandler"
