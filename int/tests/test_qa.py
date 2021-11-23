@@ -36,9 +36,6 @@ async def test_send_question(echo: EchoClient, backchannel_endpoint: str, connec
                 {"text": "yes"},
                 {"text": "no"}
             ],
-            # "~thread": {
-            #     "thid": "MockTestThreadID",
-            # }
         },
     )
     response = await echo.get_message(connection)
@@ -52,16 +49,8 @@ async def test_send_question(echo: EchoClient, backchannel_endpoint: str, connec
         "@type": "https://didcomm.org/questionanswer/1.0/answer",
         "response": "yes",
     }
-    def log_request(request):
-        print(f"Request event hook: {request.method} {request.url} - Waiting for response")
 
-    def log_response(response):
-        request = response.request
-        print(f"Response event hook: {request.method} {request.url} - Status {response.status_code}")
-
-    client = httpx.Client(event_hooks={'request': [log_request], 'response': [log_response]})
-
-    r = client.post(f"{backchannel_endpoint}/qa/{thread_id}/send-answer", json=answer)
+    r = httpx.post(f"{backchannel_endpoint}/qa/{thread_id}/send-answer", json=answer)
     assert r.status_code == 200
 
     response = await echo.get_message(connection)
