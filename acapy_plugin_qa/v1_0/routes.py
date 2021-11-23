@@ -121,9 +121,7 @@ async def on_answer_received(profile: Profile, event: Event):
         responder = profile.inject(BaseResponder)
         await responder.send(rewrapped_answer, connection_id=record.connection_id)
 
-        await manager.delete_record(
-            session, thread_id=event.payload["thread_id"]
-        )
+        await manager.delete_record(session, thread_id=event.payload["thread_id"])
 
 
 class QuestionRequestSchema(AgentMessageSchema):
