@@ -10,9 +10,21 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
+thread_id = "MockTestRequestID"
+question = {
+    "@type": "https://didcomm.org/questionanswer/1.0/question",
+    "@id": thread_id,
+    "question_text": "Are you a test agent?",
+    "question_detail": "Verifying that the Q&A Handler works via integration tests",
+    "valid_responses": [
+        {"text": "yes"},
+        {"text": "no"}
+    ],
+}
+
 
 @pytest.mark.asyncio
-async def test_send_question(echo: EchoClient, backchannel_endpoint: str, connection: ConnectionInfo):
+async def test_send_question_receive_answer(echo: EchoClient, backchannel_endpoint: str, connection: ConnectionInfo):
     """Testing the Status Request Message with no queued messages."""
     await echo.send_message(connection, {"@type": "https://didcomm.org/discover-features/1.0/query", "query": "*"})
     response = await echo.get_message(connection)
@@ -23,34 +35,33 @@ async def test_send_question(echo: EchoClient, backchannel_endpoint: str, connec
     protocols.sort()
     print(json.dumps(protocols, indent=4, sort_keys=True))
 
-    thread_id = "MockTestRequestID"
 
     await echo.send_message(
         connection,
-        {
-            "@type": "https://didcomm.org/questionanswer/1.0/question",
-            "@id": thread_id,
-            "question_text": "Are you a test agent?",
-            "question_detail": "Verifying that the Q&A Handler works via integration tests",
-            "valid_responses": [
-                {"text": "yes"},
-                {"text": "no"}
-            ],
-        },
+        question,
     )
-    response = await echo.get_message(connection)
-    print(response)
+    # response = await echo.get_message(connection)
+    # print(response)
 
-    assert response["@type"] == (
-        "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/question"
-    )
+    # assert response["@type"] == (
+    #     "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/question"
+    # )
+
+    r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
+    assert r.status_code == 200
+
+    print(r.text)
+    response = r.json()[0]
+    assert response["question_text"] == question["question_text"]
+    assert response["question_detail"] == question["question_detail"]
+    assert response["valid_responses"] == question["valid_responses"]
 
     answer = {
         "@type": "https://didcomm.org/questionanswer/1.0/answer",
         "response": "yes",
     }
-
-    r = httpx.post(f"{backchannel_endpoint}/qa/{thread_id}/send-answer", json=answer)
+    question_id = response["_id"]
+    r = httpx.post(f"{backchannel_endpoint}/qa/{question_id}/send-answer", json=answer)
     assert r.status_code == 200
 
     response = await echo.get_message(connection)
@@ -61,9 +72,8 @@ async def test_send_question(echo: EchoClient, backchannel_endpoint: str, connec
     )
     assert response["response"] == "yes"
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_send_answer(echo: EchoClient, connection: ConnectionInfo):
+async def test_receive_question(echo: EchoClient, backchannel_endpoint: str, connection: ConnectionInfo):
     """Testing the Status Request Message with no queued messages."""
     # await echo.send_message(connection, {"@type": "https://didcomm.org/discover-features/1.0/query", "query": "*"})
     # response = await echo.get_message(connection)
@@ -71,18 +81,33 @@ async def test_send_answer(echo: EchoClient, connection: ConnectionInfo):
     # protocols = [r["pid"] for r in response["protocols"]]
     # protocols.sort()
     # print(json.dumps(protocols, indent=4, sort_keys=True))
+    r = httpx.get(f"{backchannel_endpoint}/connections")
+
+    client_connection_id = r.json()["results"][0]["connection_id"]
+
+    r = httpx.post(f"{backchannel_endpoint}/qa/{client_connection_id}/send-question", json=question)
+    assert r.status_code == 200
+
+    response = await echo.get_message(connection)
+    print(response)
+    assert response["@type"] == (
+        "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/question"
+    )
+    thread_id = response["~thread"]["thid"]
+
+
     await echo.send_message(
         connection,
         {
             "@type": "https://didcomm.org/questionanswer/1.0/answer",
             "response": "yes",
             "~thread": {
-                "thid": "ad285eef-a5e4-4cea-9a40-12f3294d1826"
+                "thid": thread_id
             }
         },
     )
-    response = await echo.get_message(connection)
-    print(response)
-    assert response["@type"] == (
-        "https://didcomm.org/questionanswer/1.0/answer"
-    )
+    # response = await echo.get_message(connection)
+    # print(response)
+    # assert response["@type"] == (
+    #     "https://didcomm.org/questionanswer/1.0/answer"
+    # )
