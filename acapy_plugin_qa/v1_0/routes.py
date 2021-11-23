@@ -119,13 +119,6 @@ async def on_answer_received(profile: Profile, event: Event, session: ProfileSes
         await responder.send(rewrapped_answer, connection_id=record.connection_id)
 
 
-# async def test_route(request: web.Request):
-# 	return web.json_response({"success": True})
-
-# async def register(app: web.Application):
-# 	app.add_routes([web.get("/qa", test_route)])
-
-
 class QuestionRequestSchema(AgentMessageSchema):
     """Schema for Question message."""
 
@@ -174,13 +167,19 @@ class BasicThidMatchInfoSchema(OpenAPISchema):
     )
 
 
+# class QuestionListResponseSchema(OpenAPISchema):
+#     """Path parameters and validators for request taking connection id."""
+
+#     thread_id = fields.List(
+#         description="Thread identifier", required=True, example=UUIDFour.EXAMPLE
+#     )
+
+
 @docs(
     tags=["QAProtocol"],
     summary="Question & Answer Protocol",
 )
-# @match_info_schema(BasicThidMatchInfoSchema())
-# @request_schema(AnswerSchema())
-@response_schema(AnswerSchema(), 200, description="")
+# @response_schema(QuestionListResponseSchema(), 200, description="")
 async def get_questions(request: web.BaseRequest):
     """
     Request handler for inspecting supported protocols.
@@ -193,38 +192,15 @@ async def get_questions(request: web.BaseRequest):
 
     """
     # Extract question data sent to us (the Questioner)
-    print(request)
-    print(dict(request))
-    # return web.json_response({})
     context: AdminRequestContext = request["context"]
-    # thread_id = request.match_info["thread_id"]
-    outbound_handler = request["outbound_message_router"]
-    # params = await request.json()
-    manager = QAManager(context)
 
     try:
         async with context.session() as session:
             records = await QAExchangeRecord.query(session)
-            print("==*== **FROSTYFROG**"*3)
-            print(records)
-            print("==*== **FROSTYFROG**"*3)
-            # record = await manager.retrieve_by_id(thread_id)
-            # connection = await ConnRecord.retrieve_by_id(session, connection_id)
     except StorageNotFoundError as err:
         raise web.HTTPNotFound(reason=err.roll_up) from err
 
-    # if connection.is_ready:
-    #     # Setup a question object to pass on to the responder
-    #     msg = Answer(
-    #         response=params["response"],
-    #     )
-    #     msg.assign_thread_id(msg._thread.thid, thread_id)  # At this time, the thid is required for serialization
-    #     AnswerHandler.qa_notify(context.profile, msg)
-    #     await outbound_handler(msg, connection_id=connection_id)
-
     return web.json_response([rec.serialize() for rec in records])
-
-    return web.json_response(msg.serialize())
 
 
 @docs(
@@ -236,13 +212,13 @@ async def get_questions(request: web.BaseRequest):
 @response_schema(QuestionSchema(), 200, description="")
 async def send_question(request: web.BaseRequest):
     """
-    Request handler for inspecting supported protocols.
+    Request handler for sending a question.
 
     Args:
         request: aiohttp request object
 
     Returns:
-        The diclosed protocols response
+        empty response
 
     """
     # Extract question data sent to us (the Questioner)
@@ -250,23 +226,6 @@ async def send_question(request: web.BaseRequest):
     connection_id = request.match_info["conn_id"]
     outbound_handler = request["outbound_message_router"]
     params = await request.json()
-    print(request)
-    # registry: ProtocolRegistry = context.inject(ProtocolRegistry)
-    # results = registry.protocols_matching_query(request.query.get("query", "*"))
-    # results = params["question_text"]
-    # q = Question(
-    #     question_text=params["question_text"],
-    #     valid_responses=params["valid_responses"]
-    #     # {"results": {k: {} for k in results}}
-    # )
-    # results = request.query.get("question_text")
-    # q = Question(
-    # 	question_text=request.query.get("question_text"),
-    # 	valid_responses={"valid_responses": {"text": k} for k in request.query.getall("valid_responses") }
-    # 	# {"results": {k: {} for k in results}}
-    # 	)
-    # q.assign_thread_id(request.query.get("@id") or uuid.uuid4())
-    # q.assign_thread_from(q)
 
     try:
         async with context.session() as session:
@@ -291,31 +250,25 @@ async def send_question(request: web.BaseRequest):
 
     return web.json_response({})
 
-    return web.json_response(msg.serialize())
-
 
 @docs(
     tags=["QAProtocol"],
     summary="Question & Answer Protocol",
 )
-# @match_info_schema(BasicThidMatchInfoSchema())
+@match_info_schema(BasicThidMatchInfoSchema())
 # @request_schema(AnswerSchema())
-@response_schema(AnswerSchema(), 200, description="")
 async def send_answer(request: web.BaseRequest):
     """
-    Request handler for inspecting supported protocols.
+    Request handler for sending an answer.
 
     Args:
         request: aiohttp request object
 
     Returns:
-        The diclosed protocols response
+        empty response
 
     """
     # Extract question data sent to us (the Questioner)
-    print(request)
-    print(dict(request))
-    # return web.json_response({})
     context: AdminRequestContext = request["context"]
     thread_id = request.match_info["thread_id"]
     outbound_handler = request["outbound_message_router"]
@@ -340,8 +293,6 @@ async def send_answer(request: web.BaseRequest):
         await outbound_handler(msg, connection_id=record.connection_id)
 
     return web.json_response({})
-
-    return web.json_response(msg.serialize())
 
 
 async def register(app: web.Application):

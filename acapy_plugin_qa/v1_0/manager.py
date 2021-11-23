@@ -23,13 +23,13 @@ class QAManager:
     async def store_question(self, question: Question, connection_id: str):
         qa_exchange_record = QAExchangeRecord(
             # question_answer_id = question._id,
-            thread_id = question._id,
-            # thread_id = question._thread.thid if question._thread else question.id,
-            # pthid = None,
-            connection_id = connection_id,
-            valid_responses = question.valid_responses,
-            question_text = question.question_text,
-            question_detail = question.question_detail
+            thread_id=question._id,
+            # thread_id=question._thread.thid if question._thread else question.id,
+            # pthid=None,
+            connection_id=connection_id,
+            valid_responses=question.valid_responses,
+            question_text=question.question_text,
+            question_detail=question.question_detail,
         )
 
         async with self.profile.session() as session:

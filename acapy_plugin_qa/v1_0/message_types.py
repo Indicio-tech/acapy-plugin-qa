@@ -12,6 +12,7 @@ ANSWER = f"{BASE}/answer"
 PROTOCOL_PACKAGE = "acapy_plugin_qa.v1_0"
 MESSAGE_TYPES = DIDCommPrefix.qualify_all(
     {
-    QUESTION: f"{PROTOCOL_PACKAGE}.messages.question.Question",
-    ANSWER: f"{PROTOCOL_PACKAGE}.messages.answer"}
+        QUESTION: f"{PROTOCOL_PACKAGE}.messages.question.Question",
+        ANSWER: f"{PROTOCOL_PACKAGE}.messages.answer",
+    }
 )

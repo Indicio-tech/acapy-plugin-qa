@@ -58,7 +58,15 @@ class QAExchangeRecord(BaseRecord):
     @property
     def record_value(self) -> dict:
         """Return record value."""
-        return {prop: getattr(self, prop) for prop in ("thread_id", "question_text", "question_detail", "valid_responses")}
+        return {
+            prop: getattr(self, prop)
+            for prop in (
+                "thread_id",
+                "question_text",
+                "question_detail",
+                "valid_responses",
+            )
+        }
 
     @classmethod
     async def query_by_ids(

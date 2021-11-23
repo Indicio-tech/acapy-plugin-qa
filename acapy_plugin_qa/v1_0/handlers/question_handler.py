@@ -24,7 +24,9 @@ class QuestionHandler(BaseHandler):
         )
 
         qa_manager = QAManager(context.profile)
-        await qa_manager.store_question(context.message, context.connection_record.connection_id)
+        await qa_manager.store_question(
+            context.message, context.connection_record.connection_id
+        )
 
         # Emit a webhook
         await context.profile.notify(
