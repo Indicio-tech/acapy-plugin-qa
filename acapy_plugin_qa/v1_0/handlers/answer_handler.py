@@ -19,19 +19,19 @@ class AnswerHandler(BaseHandler):
         """Handle question message."""
         await self.qa_notify(context.profile, context.message)
 
-    @staticmethod
-    async def qa_notify(self, profile: Profile, answer: Answer):
+    @classmethod
+    async def qa_notify(cls, profile: Profile, answer: Answer):
         # print(context.message)
         # await responder.send_reply(context.message)
         assert isinstance(answer, Answer)
-        self._logger.debug(
+        cls._logger.debug(
             "Received answer in thread %s " "with text: %s",
             answer._thread,
             answer.response,
         )
         # Emit a webhook
         await profile.notify(
-            self.WEBHOOK_TOPIC,
+            cls.WEBHOOK_TOPIC,
             {
                 "thread_id": answer._thread,
                 "response": answer.response,
@@ -40,7 +40,7 @@ class AnswerHandler(BaseHandler):
 
         # Emit an event
         await profile.notify(
-            self.RECEIVED_TOPIC,
+            cls.RECEIVED_TOPIC,
             {
                 "thread_id": answer._thread,
                 "response": answer.response,
