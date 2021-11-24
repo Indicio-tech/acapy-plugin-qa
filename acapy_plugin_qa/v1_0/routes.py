@@ -195,7 +195,10 @@ async def send_answer(request: web.BaseRequest):
             msg.assign_thread_id(record.thread_id)
             await AnswerHandler.qa_notify(context.profile, msg)
             await outbound_handler(msg, connection_id=record.connection_id)
-            await record.delete_record(session)
+
+            record.state = QAExchangeRecord.STATE_ANSWERED
+            record.response = params["response"]
+            await record.save(session, reason="Answer sent")
 
     return web.json_response({})
 

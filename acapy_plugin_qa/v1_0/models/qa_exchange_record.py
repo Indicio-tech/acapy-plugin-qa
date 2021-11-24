@@ -24,30 +24,40 @@ class QAExchangeRecord(BaseRecord):
     RECORD_TYPE = "question_answer"
     RECORD_ID_NAME = "question_answer_id"
     TAG_NAMES = {
+        "state",
+        "role",
         "connection_id",
         "thread_id",
     }
 
+    ROLE_QUESTIONER = "questioner"
+    ROLE_RESPONDER = "responder"
+    STATE_PENDING = "pending"
+    STATE_ANSWERED = "answered"
+
     def __init__(
         self,
         *,
+        thread_id: str,
+        connection_id: str,
         question_answer_id: str = None,
-        thread_id: str = None,
-        pthid: str = None,
-        connection_id: str = None,
+        state: str = None,
+        role: str = None,
         valid_responses: list = None,
         question_text: str = None,
         question_detail: str = None,
+        response: str = None,
         **kwargs,
     ):
         """Construct record."""
-        super().__init__(question_answer_id, **kwargs)
+        super().__init__(question_answer_id, state or self.STATE_PENDING, **kwargs)
+        self.role = role or self.ROLE_QUESTIONER
         self.thread_id = thread_id
-        self.pthid = pthid
         self.connection_id = connection_id
         self.valid_responses = valid_responses
         self.question_text = question_text
         self.question_detail = question_detail
+        self.response = response
 
     @property
     def question_answer_id(self) -> Optional[str]:
@@ -64,6 +74,7 @@ class QAExchangeRecord(BaseRecord):
                 "question_text",
                 "question_detail",
                 "valid_responses",
+                "response",
             )
         }
 
@@ -106,13 +117,6 @@ class QAExchangeRecord(BaseRecord):
 
 class QAExchangeRecordSchema(BaseRecordSchema):
     """Question Answer Record Schema."""
-
-    # @pre_dump
-    # def check_thread_deco(self, obj: AgentMessage, **kwargs):
-    #     """Thread decorator, and its thid and pthid, are mandatory."""
-    #     if not obj._decorators.get("~thread", {}).keys() >= {"thid"}:
-    #         raise ValidationError("Missing required field(s) in thread decorator")
-    #     return obj
 
     class Meta:
         """QAExchangeRecordSchema Meta."""

@@ -4,6 +4,7 @@ from aries_cloudagent.messaging.responder import BaseResponder
 from aries_cloudagent.core.profile import Profile
 
 from ..messages.answer import Answer
+from ..models.qa_exchange_record import QAExchangeRecord
 
 
 class AnswerHandler(BaseHandler):
@@ -23,12 +24,18 @@ class AnswerHandler(BaseHandler):
             context.message.response,
         )
 
+        async with context.session() as session:
+            record = await QAExchangeRecord.query_by_thread_id(
+                session, context.message._thread_id
+            )
+            record.state = QAExchangeRecord.STATE_ANSWERED
+            record.response = context.message.response
+            await record.save(session, reason="Answer received")
+
         await self.qa_notify(context.profile, context.message)
 
     @classmethod
     async def qa_notify(cls, profile: Profile, answer: Answer):
-        # print(context.message)
-        # await responder.send_reply(context.message)
         assert isinstance(answer, Answer)
 
         # Emit a webhook

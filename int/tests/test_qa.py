@@ -23,7 +23,7 @@ question = {
 async def test_send_question_receive_answer(
     echo: EchoClient, backchannel_endpoint: str, connection: ConnectionInfo
 ):
-    """Testing the Status Request Message with no queued messages."""
+    """Test ACA-Py can respond to a question."""
 
     await echo.send_message(
         connection,
@@ -33,13 +33,12 @@ async def test_send_question_receive_answer(
     r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
     assert r.status_code == 200
 
-    response = r.json()[0]
+    response = r.json()["results"][0]
     assert response["question_text"] == question["question_text"]
     assert response["question_detail"] == question["question_detail"]
     assert response["valid_responses"] == question["valid_responses"]
 
     answer = {
-        "@type": "https://didcomm.org/questionanswer/1.0/answer",
         "response": "yes",
     }
     question_id = response["_id"]
@@ -53,19 +52,21 @@ async def test_send_question_receive_answer(
     )
     assert response["response"] == "yes"
 
+    r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
+    assert r.status_code == 200
+    assert r.json()["results"] == []
+
 
 @pytest.mark.asyncio
 async def test_receive_question(
-    echo: EchoClient, backchannel_endpoint: str, connection: ConnectionInfo
+    echo: EchoClient,
+    backchannel_endpoint: str,
+    connection: ConnectionInfo,
+    connection_id: str,
 ):
-    """Testing the Status Request Message with no queued messages."""
-
-    r = httpx.get(f"{backchannel_endpoint}/connections")
-
-    client_connection_id = r.json()["results"][0]["connection_id"]
-
+    """Test ACA-Py can send a question and receive an answer."""
     r = httpx.post(
-        f"{backchannel_endpoint}/qa/{client_connection_id}/send-question", json=question
+        f"{backchannel_endpoint}/qa/{connection_id}/send-question", json=question
     )
     assert r.status_code == 200
 
@@ -83,8 +84,6 @@ async def test_receive_question(
             "~thread": {"thid": thread_id},
         },
     )
-    # response = await echo.get_message(connection)
-    # print(response)
-    # assert response["@type"] == (
-    #     "https://didcomm.org/questionanswer/1.0/answer"
-    # )
+    r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
+    assert r.status_code == 200
+    assert r.json()["results"] == []
