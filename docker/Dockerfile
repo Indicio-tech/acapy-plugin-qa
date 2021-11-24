@@ -9,6 +9,7 @@ RUN curl -sSL https://install.python-poetry.org | python -
 RUN poetry config virtualenvs.create true; poetry config virtualenvs.in-project true
 
 RUN mkdir acapy_plugin_qa && touch acapy_plugin_qa/__init__.py
+RUN mkdir acapy_plugin_delegated_qa && touch acapy_plugin_delegated_qa/__init__.py
 COPY README.md setup.py pyproject.toml poetry.lock ./
 
 RUN poetry install --no-dev

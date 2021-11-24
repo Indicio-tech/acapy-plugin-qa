@@ -16,7 +16,6 @@ class AnswerHandler(BaseHandler):
     async def handle(self, context: RequestContext, responder: BaseResponder):
         """Handle answer message."""
 
-        """Handle question message."""
         assert isinstance(context.message, Answer)
         self._logger.debug(
             "Received answer in thread %s " "with text: %s",

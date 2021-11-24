@@ -11,7 +11,6 @@ from aries_cloudagent.storage.error import StorageNotFoundError
 from marshmallow import fields
 
 from .handlers.answer_handler import AnswerHandler
-from .manager import QAManager
 from .message_types import SPEC_URI
 from .messages.answer import Answer
 from .messages.question import Question, QuestionSchema
@@ -101,7 +100,7 @@ async def get_questions(request: web.BaseRequest):
     except StorageNotFoundError as err:
         raise web.HTTPNotFound(reason=err.roll_up) from err
 
-    return web.json_response([rec.serialize() for rec in records])
+    return web.json_response({"results": [rec.serialize() for rec in records]})
 
 
 @docs(
@@ -142,11 +141,17 @@ async def send_question(request: web.BaseRequest):
             question_detail=params["question_detail"],
             valid_responses=params["valid_responses"],
         )
-        manager = QAManager(context.profile)
-        await manager.store_question(msg, connection_id)  # Store the question
-        msg.assign_thread_id(
-            params["@id"]
-        )  # At this time, the thid is required for serialization
+        record = QAExchangeRecord(
+            role=QAExchangeRecord.ROLE_QUESTIONER,
+            connection_id=connection_id,
+            thread_id=msg._id,
+            question_text=msg.question_text,
+            question_detail=msg.question_detail,
+            valid_responses=msg.valid_responses,
+        )
+        async with context.session() as session:
+            await record.save(session, reason="New question received")
+
         await outbound_handler(msg, connection_id=connection_id)
 
     return web.json_response({})
@@ -174,23 +179,23 @@ async def send_answer(request: web.BaseRequest):
     thread_id = request.match_info["thread_id"]
     outbound_handler = request["outbound_message_router"]
     params = await request.json()
-    manager = QAManager(context.profile)
 
-    try:
-        async with context.session() as session:
-            record = await manager.retrieve_by_id(session, thread_id)
+    async with context.session() as session:
+        try:
+            record = await QAExchangeRecord.query_by_thread_id(session, thread_id)
             connection = await ConnRecord.retrieve_by_id(session, record.connection_id)
-    except StorageNotFoundError as err:
-        raise web.HTTPNotFound(reason=err.roll_up) from err
+        except StorageNotFoundError as err:
+            raise web.HTTPNotFound(reason=err.roll_up) from err
 
-    if connection.is_ready:
-        # Setup a question object to pass on to the responder
-        msg = Answer(
-            response=params["response"],
-        )
-        msg.assign_thread_id(record.thread_id)
-        await AnswerHandler.qa_notify(context.profile, msg)
-        await outbound_handler(msg, connection_id=record.connection_id)
+        if connection.is_ready:
+            # Setup a question object to pass on to the responder
+            msg = Answer(
+                response=params["response"],
+            )
+            msg.assign_thread_id(record.thread_id)
+            await AnswerHandler.qa_notify(context.profile, msg)
+            await outbound_handler(msg, connection_id=record.connection_id)
+            await record.delete_record(session)
 
     return web.json_response({})
 
