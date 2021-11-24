@@ -37,6 +37,7 @@ class QuestionHandler(BaseHandler):
         await context.profile.notify(
             self.WEBHOOK_TOPIC,
             {
+                "connection_id": context.connection_record.connection_id,
                 "thread_id": context.message._thread,
                 "question_text": context.message.question_text,
                 "question_detail": context.message.question_detail,
@@ -48,6 +49,7 @@ class QuestionHandler(BaseHandler):
         await context.profile.notify(
             self.RECEIVED_TOPIC,
             {
+                "connection_id": context.connection_record.connection_id,
                 "thread_id": context.message._thread,
                 "question_text": context.message.question_text,
                 "question_detail": context.message.question_detail,

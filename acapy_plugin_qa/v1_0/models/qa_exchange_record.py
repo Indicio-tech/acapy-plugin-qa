@@ -70,7 +70,6 @@ class QAExchangeRecord(BaseRecord):
         return {
             prop: getattr(self, prop)
             for prop in (
-                "thread_id",
                 "question_text",
                 "question_detail",
                 "valid_responses",
@@ -157,3 +156,4 @@ class QAExchangeRecordSchema(BaseRecordSchema):
             "A list of dictionaries indicating possible valid responses to the question."
         ),
     )
+    response = fields.Str(required=False, description="The received answer response")

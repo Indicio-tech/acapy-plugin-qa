@@ -37,12 +37,12 @@ async def test_send_question_receive_answer(
     assert response["question_text"] == question["question_text"]
     assert response["question_detail"] == question["question_detail"]
     assert response["valid_responses"] == question["valid_responses"]
+    thread_id = response["thread_id"]
 
     answer = {
         "response": "yes",
     }
-    question_id = response["_id"]
-    r = httpx.post(f"{backchannel_endpoint}/qa/{question_id}/send-answer", json=answer)
+    r = httpx.post(f"{backchannel_endpoint}/qa/{thread_id}/send-answer", json=answer)
     assert r.status_code == 200
 
     response = await echo.get_message(connection)
@@ -51,6 +51,15 @@ async def test_send_question_receive_answer(
         "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/answer"
     )
     assert response["response"] == "yes"
+
+    r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
+    assert r.status_code == 200
+    results = r.json()["results"]
+    assert results
+    assert results[0]["response"]
+
+    r = httpx.delete(f"{backchannel_endpoint}/qa/{thread_id}")
+    assert r.status_code == 200
 
     r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
     assert r.status_code == 200
@@ -74,7 +83,7 @@ async def test_receive_question(
     assert response["@type"] == (
         "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/question"
     )
-    thread_id = response["~thread"]["thid"]
+    thread_id = response["@id"]
 
     await echo.send_message(
         connection,
@@ -84,6 +93,15 @@ async def test_receive_question(
             "~thread": {"thid": thread_id},
         },
     )
+    r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
+    assert r.status_code == 200
+    results = r.json()["results"]
+    assert results
+    assert results[0]["response"]
+
+    r = httpx.delete(f"{backchannel_endpoint}/qa/{thread_id}")
+    assert r.status_code == 200
+
     r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
     assert r.status_code == 200
     assert r.json()["results"] == []

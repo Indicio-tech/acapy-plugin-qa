@@ -154,7 +154,7 @@ async def send_question(request: web.BaseRequest):
 
         await outbound_handler(msg, connection_id=connection_id)
 
-    return web.json_response({})
+    return web.json_response({"success": True})
 
 
 @docs(
@@ -200,7 +200,37 @@ async def send_answer(request: web.BaseRequest):
             record.response = params["response"]
             await record.save(session, reason="Answer sent")
 
-    return web.json_response({})
+    return web.json_response({"success": True})
+
+
+@docs(
+    tags=["QAProtocol"],
+    summary="Question & Answer Protocol",
+)
+@match_info_schema(BasicThidMatchInfoSchema())
+# @request_schema(AnswerSchema())
+async def delete(request: web.BaseRequest):
+    """
+    Request handler for sending an answer.
+
+    Args:
+        request: aiohttp request object
+
+    Returns:
+        empty response
+
+    """
+    context: AdminRequestContext = request["context"]
+    thread_id = request.match_info["thread_id"]
+
+    async with context.session() as session:
+        try:
+            record = await QAExchangeRecord.query_by_thread_id(session, thread_id)
+        except StorageNotFoundError as err:
+            raise web.HTTPNotFound(reason=err.roll_up) from err
+        await record.delete_record(session)
+
+    return web.json_response({"success": True})
 
 
 async def register(app: web.Application):
@@ -211,6 +241,7 @@ async def register(app: web.Application):
             web.get("/qa/get-questions", get_questions),
             web.post("/qa/{conn_id}/send-question", send_question),
             web.post("/qa/{thread_id}/send-answer", send_answer),
+            web.delete("/qa/{thread_id}", delete),
         ]
     )
 
