@@ -68,10 +68,9 @@ class QAExchangeRecord(BaseRecord):
         }
 
     @classmethod
-    async def query_by_ids(
+    async def query_by_thread_id(
         cls,
         session: ProfileSession,
-        connection_id: str,
         thread_id: str,
     ) -> "QAExchangeRecord":
         """Retrieve QAExchangeRecord connection_id.
@@ -81,7 +80,6 @@ class QAExchangeRecord(BaseRecord):
             thread_id: the thread id by which to filter
         """
         tag_filter = {
-            **{"connection_id": connection_id for _ in [""] if connection_id},
             **{"thread_id": thread_id for _ in [""] if thread_id},
         }
 
