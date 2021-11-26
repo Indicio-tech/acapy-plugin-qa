@@ -10,7 +10,6 @@ from aries_cloudagent.messaging.valid import UUIDFour
 from aries_cloudagent.storage.error import StorageNotFoundError
 from marshmallow import fields
 
-from .handlers.answer_handler import AnswerHandler
 from .message_types import SPEC_URI
 from .messages.answer import Answer
 from .messages.question import Question, QuestionSchema
@@ -193,7 +192,6 @@ async def send_answer(request: web.BaseRequest):
                 response=params["response"],
             )
             msg.assign_thread_id(record.thread_id)
-            await AnswerHandler.qa_notify(context.profile, msg)
             await outbound_handler(msg, connection_id=record.connection_id)
 
             record.state = QAExchangeRecord.STATE_ANSWERED
