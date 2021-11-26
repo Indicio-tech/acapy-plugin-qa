@@ -4,6 +4,10 @@ version = "0.1.0"
 description = "Q&A Protocol Plugin for ACA-Py"
 authors = ["Daniel Bluhm <dbluhm@pm.me>"]
 license = "Apache-2.0"
+packages = [
+    { include = "acapy_plugin_qa" },
+    { include = "acapy_plugin_delegated_qa" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.6.9"
@@ -13,6 +17,8 @@ aries-cloudagent = "^0.7.2"
 pytest = "^6.2.5"
 pre-commit = "^2.15.0"
 pytest-asyncio = "^0.16.0"
+black = "^21.6b0"
+flake8 = "^3.9.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

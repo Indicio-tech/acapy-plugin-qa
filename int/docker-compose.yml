@@ -14,6 +14,8 @@ services:
         -e http://agent:3000
         --admin 0.0.0.0 3001 --admin-insecure-mode 
         --no-ledger
+        --plugin acapy_plugin_qa
+        --plugin acapy_plugin_delegated_qa
         --log-level debug
 
   echo:
@@ -21,11 +23,6 @@ services:
     ports:
       - "3002:3002"
     command: --host 0.0.0.0 --port 3002 --log-level debug
-
-  #*******************************************************************
-  # tester: drives tests for acapy_plugin_pickup in a                *
-  # "Juggernaut" fashion!                                            *
-  #*******************************************************************
 
   tests:
     container_name: juggernaut
