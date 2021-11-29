@@ -1,6 +1,6 @@
 """Store question details until answer is received."""
 
-from typing import Optional
+from typing import Any, Optional
 
 from marshmallow import fields
 from marshmallow.utils import EXCLUDE
@@ -23,6 +23,8 @@ class QAExchangeRecord(BaseRecord):
 
     RECORD_TYPE = "question_answer"
     RECORD_ID_NAME = "question_answer_id"
+    RECORD_TOPIC = "questionanswer"
+    EVENT_NAMESPACE = "acapy"
     TAG_NAMES = {
         "state",
         "role",
@@ -101,6 +103,28 @@ class QAExchangeRecord(BaseRecord):
         if not result:
             raise StorageNotFoundError("No QAExchangeRecord found for the given IDs")
         return result[0]
+
+    async def emit_event(self, session: ProfileSession, payload: Any = None):
+        """
+        Emit an event.
+
+        Args:
+            session: The profile session to use
+            payload: The event payload
+        """
+        topic_detail = {
+            f"{self.ROLE_QUESTIONER}::{self.STATE_PENDING}": "question_sent",
+            f"{self.ROLE_RESPONDER}::{self.STATE_PENDING}": "question_received",
+            f"{self.ROLE_QUESTIONER}::{self.STATE_ANSWERED}": "answer_received",
+            f"{self.ROLE_RESPONDER}::{self.STATE_ANSWERED}": "answer_sent",
+        }[f"{self.role}::{self.state}"]
+
+        topic = f"{self.EVENT_NAMESPACE}::{self.RECORD_TOPIC}::{topic_detail}"
+
+        if not payload:
+            payload = self.serialize()
+
+        await session.profile.notify(topic, payload)
 
     def to_message(self):
         """Return an answer constructed from this record."""

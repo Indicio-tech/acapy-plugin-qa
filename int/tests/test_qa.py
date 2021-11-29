@@ -9,10 +9,8 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
-thread_id = "MockTestRequestID"
 question = {
     "@type": "https://didcomm.org/questionanswer/1.0/question",
-    "@id": thread_id,
     "question_text": "Are you a test agent?",
     "question_detail": "Verifying that the Q&A Handler works via integration tests",
     "valid_responses": [{"text": "yes"}, {"text": "no"}],

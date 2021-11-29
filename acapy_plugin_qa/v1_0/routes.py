@@ -1,22 +1,42 @@
 import logging
+import re
 
 from aiohttp import web
 from aiohttp_apispec import docs, match_info_schema, request_schema, response_schema
 from aries_cloudagent.admin.request_context import AdminRequestContext
 from aries_cloudagent.connections.models.conn_record import ConnRecord
+from aries_cloudagent.core.event_bus import Event, EventBus
+from aries_cloudagent.core.profile import Profile
 from aries_cloudagent.messaging.agent_message import AgentMessageSchema
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
 from aries_cloudagent.storage.error import StorageNotFoundError
 from marshmallow import fields
 
-from .handlers.answer_handler import AnswerHandler
 from .message_types import SPEC_URI
 from .messages.answer import Answer
 from .messages.question import Question, QuestionSchema
 from .models.qa_exchange_record import QAExchangeRecord
 
 LOGGER = logging.getLogger(__name__)
+
+WEBHOOK_TOPIC = "acapy::webhook::questionanswer"
+
+
+def register_events(event_bus: EventBus):
+    """Register to handle events."""
+    event_bus.subscribe(
+        re.compile(
+            f"^{QAExchangeRecord.EVENT_NAMESPACE}::"
+            f"{QAExchangeRecord.RECORD_TOPIC}::.*$"
+        ),
+        send_webhooks,
+    )
+
+
+async def send_webhooks(profile: Profile, event: Event):
+    """Send webhooks for QA events."""
+    await profile.notify(WEBHOOK_TOPIC, event.payload)
 
 
 class QuestionRequestSchema(AgentMessageSchema):
@@ -193,7 +213,6 @@ async def send_answer(request: web.BaseRequest):
                 response=params["response"],
             )
             msg.assign_thread_id(record.thread_id)
-            await AnswerHandler.qa_notify(context.profile, msg)
             await outbound_handler(msg, connection_id=record.connection_id)
 
             record.state = QAExchangeRecord.STATE_ANSWERED

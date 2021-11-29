@@ -1,28 +1,22 @@
 """Common fixtures for testing."""
 
 import asyncio
-import pytest
-from typing import Optional, Iterator
 import hashlib
-import os
-
-# TODO: Remove debugging tools before final commit
 import logging
+import os
+from typing import Iterator, Optional
 
 from acapy_client import Client
+from acapy_client.api.connection import create_static, delete_connection, set_metadata
 from acapy_client.models import (
-    ConnectionStaticResult,
-    ConnectionStaticRequest,
     ConnectionMetadataSetRequest,
+    ConnectionStaticRequest,
+    ConnectionStaticResult,
 )
 from acapy_client.models.conn_record import ConnRecord
-from acapy_client.api.connection import (
-    create_static,
-    delete_connection,
-    set_metadata,
-)
-
 from echo_agent.client import EchoClient
+import httpx
+import pytest
 
 
 LOGGER = logging.getLogger(__name__)
@@ -136,3 +130,15 @@ async def connection(
             their_vk=agent_connection.my_verkey,
         )
     yield conn
+
+
+@pytest.fixture(autouse=True)
+async def clear_questions(backchannel_endpoint: str):
+    yield
+    r = httpx.get(f"{backchannel_endpoint}/qa/get-questions")
+    assert r.status_code == 200
+    results = r.json()["results"]
+
+    for thread_id in [result["thread_id"] for result in results]:
+        r = httpx.delete(f"{backchannel_endpoint}/qa/{thread_id}")
+        assert r.status_code == 200
