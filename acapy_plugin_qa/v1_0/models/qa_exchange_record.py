@@ -5,6 +5,7 @@ from typing import Any, Optional
 from marshmallow import fields
 from marshmallow.utils import EXCLUDE
 
+from aries_cloudagent.core.event_bus import Event, EventBus
 from aries_cloudagent.core.profile import ProfileSession
 from aries_cloudagent.messaging.models.base_record import BaseRecord, BaseRecordSchema
 from aries_cloudagent.messaging.valid import UUID4
@@ -124,7 +125,10 @@ class QAExchangeRecord(BaseRecord):
         if not payload:
             payload = self.serialize()
 
-        await session.profile.notify(topic, payload)
+        event_bus = session.profile.inject(EventBus)
+        await event_bus.notify(session.profile, Event(topic, payload))
+        # notify did not exist on session.profile in ACA-Py 0.6.x
+        # await session.profile.notify(topic, payload)
 
     def to_message(self):
         """Return an answer constructed from this record."""
@@ -136,6 +140,17 @@ class QAExchangeRecord(BaseRecord):
             thread_id=self.thread_id,
             response=self.response,
         )
+
+    # This method is for ACA-Py 0.6.x compatibility and
+    # should be removed if using a future version
+    async def post_save(
+        self,
+        session: ProfileSession,
+        new_record: bool,
+        last_state: str,
+        webhook: bool = None,
+    ):
+        await self.emit_event(session)
 
 
 class QAExchangeRecordSchema(BaseRecordSchema):
