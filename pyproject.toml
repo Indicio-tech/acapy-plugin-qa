@@ -6,7 +6,6 @@ authors = ["Daniel Bluhm <dbluhm@pm.me>"]
 license = "Apache-2.0"
 packages = [
     { include = "acapy_plugin_qa" },
-    { include = "acapy_plugin_delegated_qa" },
 ]
 
 [tool.poetry.dependencies]
