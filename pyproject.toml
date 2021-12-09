@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6.9"
-aries-cloudagent = { git = "https://github.com/indicio-tech/aries-cloudagent-python", rev = "10b8134ddb9bc6a26058c929c35ec7b230787174", extras = ["indy"] }
+aries-cloudagent = { git = "https://github.com/indicio-tech/aries-cloudagent-python", rev = "da45b4d28a45e58ef109617842f15569f4d477f9", extras = ["indy"] }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
