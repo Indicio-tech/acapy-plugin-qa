@@ -11,12 +11,12 @@ from aries_cloudagent.messaging.agent_message import AgentMessageSchema
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
 from aries_cloudagent.storage.error import StorageNotFoundError
-from marshmallow import Schema, fields
+from marshmallow import fields
 
 from .message_types import SPEC_URI
 from .messages.answer import Answer
 from .messages.question import Question, QuestionSchema
-from .models.qa_exchange_record import QAExchangeRecord
+from .models.qa_exchange_record import QAExchangeRecord, QAExchangeRecordSchema
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,22 +45,10 @@ class QuestionRequestSchema(QuestionSchema):
     pass
 
 
-class QuestionRequestResponseSchema(Schema):
+class QuestionRequestResponseSchema(QAExchangeRecordSchema):
     """Schema for Question request response."""
 
-    class Meta:
-        model_class = Question
-
-    state = fields.Str(
-        required=True,
-        description=("The state of the question being asked."),
-        example="QUESTION_SENT",
-    )
-    question_id = fields.Str(
-        required=False,
-        description=("The associated ID of the question"),
-        example=UUIDFour.EXAMPLE,
-    )
+    pass
 
 
 class AnswerRequestSchema(AgentMessageSchema):
@@ -177,12 +165,7 @@ async def send_question(request: web.BaseRequest):
 
     await outbound_handler(msg, connection_id=connection_id)
 
-    return web.json_response(
-        {
-            "state": "QUESTION_SENT",
-            "question_id": msg._id,
-        }
-    )
+    return web.json_response(record.serialize())
 
 
 @docs(
