@@ -11,7 +11,7 @@ from aries_cloudagent.messaging.agent_message import AgentMessageSchema
 from aries_cloudagent.messaging.models.openapi import OpenAPISchema
 from aries_cloudagent.messaging.valid import UUIDFour
 from aries_cloudagent.storage.error import StorageNotFoundError
-from marshmallow import fields
+from marshmallow import Schema, fields
 
 from .message_types import SPEC_URI
 from .messages.answer import Answer
@@ -39,26 +39,27 @@ async def send_webhooks(profile: Profile, event: Event):
     await profile.notify(WEBHOOK_TOPIC, event.payload)
 
 
-class QuestionRequestSchema(AgentMessageSchema):
-    """Schema for Question message."""
+class QuestionRequestSchema(QuestionSchema):
+    """Schema for Question request."""
+
+    pass
+
+
+class QuestionRequestResponseSchema(Schema):
+    """Schema for Question request response."""
 
     class Meta:
         model_class = Question
 
-    question_text = fields.Str(required=True, description=("The text of the question."))
-    question_detail = fields.Str(
-        required=False,
-        description=(
-            "This is optional fine-print giving context "
-            "to the question and its various answers."
-        ),
-    )
-    valid_responses = fields.List(
-        fields.String(),
+    state = fields.Str(
         required=True,
-        description=(
-            "A list of dictionaries indicating possible valid responses to the question."
-        ),
+        description=("The state of the question being asked."),
+        example="QUESTION_SENT",
+    )
+    question_id = fields.Str(
+        required=False,
+        description=("The associated ID of the question"),
+        example=UUIDFour.EXAMPLE,
     )
 
 
@@ -128,8 +129,8 @@ async def get_questions(request: web.BaseRequest):
     summary="Question & Answer Protocol",
 )
 @match_info_schema(BasicConnIdMatchInfoSchema())
-@request_schema(QuestionSchema())
-@response_schema(QuestionSchema(), 200, description="")
+@request_schema(QuestionRequestSchema())
+@response_schema(QuestionRequestResponseSchema(), 200, description="")
 async def send_question(request: web.BaseRequest):
     """
     Request handler for sending a question.
@@ -153,28 +154,35 @@ async def send_question(request: web.BaseRequest):
     except StorageNotFoundError as err:
         raise web.HTTPNotFound(reason=err.roll_up) from err
 
-    if connection.is_ready:
-        # Setup a question object to pass on to the responder
-        msg = Question(
-            # _id=params["@id"],
-            question_text=params["question_text"],
-            question_detail=params["question_detail"],
-            valid_responses=params["valid_responses"],
-        )
-        record = QAExchangeRecord(
-            role=QAExchangeRecord.ROLE_QUESTIONER,
-            connection_id=connection_id,
-            thread_id=msg._id,
-            question_text=msg.question_text,
-            question_detail=msg.question_detail,
-            valid_responses=msg.valid_responses,
-        )
-        async with context.session() as session:
-            await record.save(session, reason="New question received")
+    if not connection.is_ready:
+        raise web.HTTPInternalServerError(reason="Connection not ready")
 
-        await outbound_handler(msg, connection_id=connection_id)
+    # Setup a question object to pass on to the responder
+    msg = Question(
+        # _id=params["@id"],
+        question_text=params["question_text"],
+        question_detail=params["question_detail"],
+        valid_responses=params["valid_responses"],
+    )
+    record = QAExchangeRecord(
+        role=QAExchangeRecord.ROLE_QUESTIONER,
+        connection_id=connection_id,
+        thread_id=msg._id,
+        question_text=msg.question_text,
+        question_detail=msg.question_detail,
+        valid_responses=msg.valid_responses,
+    )
+    async with context.session() as session:
+        await record.save(session, reason="New question received")
 
-    return web.json_response({"success": True})
+    await outbound_handler(msg, connection_id=connection_id)
+
+    return web.json_response(
+        {
+            "state": "QUESTION_SENT",
+            "question_id": msg._id,
+        }
+    )
 
 
 @docs(
