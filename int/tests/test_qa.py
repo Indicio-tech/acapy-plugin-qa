@@ -76,12 +76,14 @@ async def test_receive_question(
         f"{backchannel_endpoint}/qa/{connection_id}/send-question", json=question
     )
     assert r.status_code == 200
+    question_thread_id = r.json()["thread_id"]
 
     response = await echo.get_message(connection)
     assert response["@type"] == (
         "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/question"
     )
     thread_id = response["@id"]
+    assert thread_id == question_thread_id
 
     await echo.send_message(
         connection,
@@ -96,6 +98,7 @@ async def test_receive_question(
     results = r.json()["results"]
     assert results
     assert results[0]["response"]
+    assert results[0]["thread_id"] == thread_id
 
     r = httpx.delete(f"{backchannel_endpoint}/qa/{thread_id}")
     assert r.status_code == 200
