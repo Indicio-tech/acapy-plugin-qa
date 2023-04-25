@@ -26,7 +26,6 @@ class Question(AgentMessage):
         valid_responses: List[Dict],
         **kwargs,
     ):
-
         """Initialize question message."""
         super().__init__(**kwargs)
 
