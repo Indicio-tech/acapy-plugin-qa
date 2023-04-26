@@ -23,7 +23,6 @@ class Answer(AgentMessage):
         response: str,
         **kwargs,
     ):
-
         """Initialize answer message."""
         super().__init__(**kwargs)
 
