@@ -9,8 +9,8 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-aries-cloudagent = {version = ">=0.7.2,<=0.8.1"}
+python = "^3.8.1"
+aries-cloudagent = {version = ">=0.7.2,<=0.8.2-rc0", allow-prereleases = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
