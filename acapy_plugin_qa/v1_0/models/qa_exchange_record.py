@@ -117,7 +117,13 @@ class QAExchangeRecord(BaseRecord):
             f"{self.ROLE_RESPONDER}::{self.STATE_PENDING}": "question_received",
             f"{self.ROLE_QUESTIONER}::{self.STATE_ANSWERED}": "answer_received",
             f"{self.ROLE_RESPONDER}::{self.STATE_ANSWERED}": "answer_sent",
-        }[f"{self.role}::{self.state}"]
+        }
+
+        # If we don't have the state in the above topic list (such as when it's
+        # deleted), don't send an event that we're not handling
+        if f"{self.role}::{self.state}" not in topic_detail.keys():
+            return
+        topic_detail = topic_detail[f"{self.role}::{self.state}"]
 
         topic = f"{self.EVENT_NAMESPACE}::{self.RECORD_TOPIC}::{topic_detail}"
 
