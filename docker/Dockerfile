@@ -1,11 +1,11 @@
-FROM python:3.9-slim
+FROM python:3.6.9-slim
 WORKDIR /usr/src/app
 ENV POETRY_HOME=/opt/poetry \
     VENV=/usr/src/app/.venv
 ENV PATH="$POETRY_HOME/bin:$VENV/bin:$PATH"
 
 RUN apt-get update && apt-get install -y curl && apt-get clean
-RUN curl -sSL https://install.python-poetry.org | python -
+RUN curl -sSL https://install.python-poetry.org | python - --version "1.1.15"
 RUN poetry config virtualenvs.create true; poetry config virtualenvs.in-project true
 
 RUN mkdir acapy_plugin_qa && touch acapy_plugin_qa/__init__.py
