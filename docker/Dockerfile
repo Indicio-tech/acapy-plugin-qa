@@ -1,4 +1,4 @@
-FROM python:3.6.9-slim
+FROM python:3.9-slim-bullseye
 WORKDIR /usr/src/app
 ENV POETRY_HOME=/opt/poetry \
     VENV=/usr/src/app/.venv
