@@ -2,7 +2,7 @@ FROM python:3.9-slim-bullseye
 WORKDIR /usr/src/app
 ENV POETRY_HOME=/opt/poetry \
     VENV=/usr/src/app/.venv
-ENV POETRY_VERSION=1.4.2
+ENV POETRY_VERSION=1.5.0
 ENV PATH="$POETRY_HOME/bin:$VENV/bin:$PATH"
 
 RUN apt-get update && apt-get install -y curl && apt-get clean
