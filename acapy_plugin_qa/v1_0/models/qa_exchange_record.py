@@ -3,11 +3,9 @@
 from typing import Any, Optional
 
 from aries_cloudagent.core.profile import ProfileSession
-from aries_cloudagent.messaging.models.base_record import (BaseRecord,
-                                                           BaseRecordSchema)
+from aries_cloudagent.messaging.models.base_record import BaseRecord, BaseRecordSchema
 from aries_cloudagent.messaging.valid import UUID4_EXAMPLE, UUID4_VALIDATE
-from aries_cloudagent.storage.error import (StorageDuplicateError,
-                                            StorageNotFoundError)
+from aries_cloudagent.storage.error import StorageDuplicateError, StorageNotFoundError
 from marshmallow import fields
 from marshmallow.utils import EXCLUDE
 
