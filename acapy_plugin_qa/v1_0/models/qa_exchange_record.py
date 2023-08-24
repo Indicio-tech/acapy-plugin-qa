@@ -2,13 +2,14 @@
 
 from typing import Any, Optional
 
+from aries_cloudagent.core.profile import ProfileSession
+from aries_cloudagent.messaging.models.base_record import (BaseRecord,
+                                                           BaseRecordSchema)
+from aries_cloudagent.messaging.valid import UUID4_EXAMPLE, UUID4_VALIDATE
+from aries_cloudagent.storage.error import (StorageDuplicateError,
+                                            StorageNotFoundError)
 from marshmallow import fields
 from marshmallow.utils import EXCLUDE
-
-from aries_cloudagent.core.profile import ProfileSession
-from aries_cloudagent.messaging.models.base_record import BaseRecord, BaseRecordSchema
-from aries_cloudagent.messaging.valid import UUID4_VALIDATE, UUID4_EXAMPLE
-from aries_cloudagent.storage.error import StorageNotFoundError, StorageDuplicateError
 
 from ..messages.answer import Answer
 
@@ -159,17 +160,20 @@ class QAExchangeRecordSchema(BaseRecordSchema):
             "required if notify is true"
         ),
         required=False,
-        validate=UUID4_VALIDATE, metadata={"example": UUID4_EXAMPLE}
+        validate=UUID4_VALIDATE,
+        metadata={"example": UUID4_EXAMPLE},
     )
     _id = fields.Str(
         description=("Thread ID of the QAExchangeRecord message thread"),
         required=False,
-        validate=UUID4_VALIDATE, metadata={"example": UUID4_EXAMPLE}
+        validate=UUID4_VALIDATE,
+        metadata={"example": UUID4_EXAMPLE},
     )
     thread_id = fields.Str(
         description=("Thread ID of the QAExchangeRecord message thread"),
         required=False,
-        validate=UUID4_VALIDATE, metadata={"example": UUID4_EXAMPLE}
+        validate=UUID4_VALIDATE,
+        metadata={"example": UUID4_EXAMPLE},
     )
     question_text = fields.Str(required=True, description=("The text of the question."))
     question_detail = fields.Str(
