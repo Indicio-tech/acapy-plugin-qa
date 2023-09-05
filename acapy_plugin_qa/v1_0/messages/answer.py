@@ -42,6 +42,7 @@ class AnswerSchema(AgentMessageSchema):
 
     class Meta:
         """Meta class for AnswerSchema."""
+
         model_class = Answer
 
     response = fields.Str(required=True, description=("The response to the question."))

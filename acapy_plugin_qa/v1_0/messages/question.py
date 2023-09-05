@@ -40,6 +40,7 @@ class QuestionSchema(AgentMessageSchema):
 
     class Meta:
         """Meta class for QuestionSchema."""
+
         model_class = Question
 
     question_text = fields.Str(required=True, description=("The text of the question."))
