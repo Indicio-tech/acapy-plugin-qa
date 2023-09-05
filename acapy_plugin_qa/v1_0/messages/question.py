@@ -1,3 +1,4 @@
+"""Question Classes."""
 from marshmallow import fields
 from typing import Dict, List, Optional
 
@@ -9,10 +10,10 @@ HANDLER_CLASS = f"{PROTOCOL_PACKAGE}.handlers.question_handler.QuestionHandler"
 
 
 class Question(AgentMessage):
-    """Class representing the question message"""
+    """Class representing the question message."""
 
     class Meta:
-        """Question Meta"""
+        """Question Meta."""
 
         handler_class = HANDLER_CLASS
         message_type = QUESTION
@@ -38,6 +39,8 @@ class QuestionSchema(AgentMessageSchema):
     """Schema for Question message."""
 
     class Meta:
+        """Meta class for QuestionSchema."""
+
         model_class = Question
 
     question_text = fields.Str(required=True, description=("The text of the question."))

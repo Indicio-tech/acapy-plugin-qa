@@ -1,3 +1,4 @@
+"""Message types."""
 from aries_cloudagent.protocols.didcomm_prefix import DIDCommPrefix
 
 SPEC_URI = "https://github.com/hyperledger/aries-rfcs/blob/main/features/0113-question-answer/README.md"
