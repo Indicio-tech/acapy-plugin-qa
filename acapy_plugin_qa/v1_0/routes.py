@@ -1,3 +1,4 @@
+"""Routes and handlers."""
 import logging
 import re
 
@@ -55,6 +56,7 @@ class AnswerRequestSchema(AgentMessageSchema):
     """Schema for Question message."""
 
     class Meta:
+        """Meta class for AnswerRequestSchema."""
         model_class = Answer
 
     response = fields.Str(required=True, description=("The text of the question."))
@@ -90,8 +92,7 @@ class BasicThidMatchInfoSchema(OpenAPISchema):
 )
 # @response_schema(QuestionListResponseSchema(), 200, description="")
 async def get_questions(request: web.BaseRequest):
-    """
-    Request handler for inspecting supported protocols.
+    """Request handler for inspecting supported protocols.
 
     Args:
         request: aiohttp request object
@@ -120,8 +121,7 @@ async def get_questions(request: web.BaseRequest):
 @request_schema(QuestionRequestSchema())
 @response_schema(QuestionRequestResponseSchema(), 200, description="")
 async def send_question(request: web.BaseRequest):
-    """
-    Request handler for sending a question.
+    """Request handler for sending a question.
 
     Args:
         request: aiohttp request object
@@ -175,8 +175,7 @@ async def send_question(request: web.BaseRequest):
 @match_info_schema(BasicThidMatchInfoSchema())
 # @request_schema(AnswerSchema())
 async def send_answer(request: web.BaseRequest):
-    """
-    Request handler for sending an answer.
+    """Request handler for sending an answer.
 
     Args:
         request: aiohttp request object
@@ -220,8 +219,7 @@ async def send_answer(request: web.BaseRequest):
 @match_info_schema(BasicThidMatchInfoSchema())
 # @request_schema(AnswerSchema())
 async def delete(request: web.BaseRequest):
-    """
-    Request handler for sending an answer.
+    """Request handler for sending an answer.
 
     Args:
         request: aiohttp request object

@@ -86,10 +86,11 @@ class QAExchangeRecord(BaseRecord):
         thread_id: str,
     ) -> "QAExchangeRecord":
         """Retrieve QAExchangeRecord connection_id.
+
         Args:
             session: the profile session to use
             connection_id: the connection id by which to filter
-            thread_id: the thread id by which to filter
+            thread_id: the thread id by which to filter.
         """
         tag_filter = {
             **{"thread_id": thread_id for _ in [""] if thread_id},
@@ -105,8 +106,7 @@ class QAExchangeRecord(BaseRecord):
         return result[0]
 
     async def emit_event(self, session: ProfileSession, payload: Any = None):
-        """
-        Emit an event.
+        """Emit an event.
 
         Args:
             session: The profile session to use

@@ -1,3 +1,4 @@
+"""Answer classes."""
 from marshmallow import fields, ValidationError, pre_dump
 
 from aries_cloudagent.messaging.agent_message import AgentMessage, AgentMessageSchema
@@ -8,10 +9,10 @@ HANDLER_CLASS = f"{PROTOCOL_PACKAGE}.handlers.answer_handler.AnswerHandler"
 
 
 class Answer(AgentMessage):
-    """Class representing the answer message"""
+    """Class representing the answer message."""
 
     class Meta:
-        """Answer Meta"""
+        """Answer Meta."""
 
         handler_class = HANDLER_CLASS
         message_type = ANSWER
@@ -40,6 +41,7 @@ class AnswerSchema(AgentMessageSchema):
         return obj
 
     class Meta:
+        """Meta class for AnswerSchema."""
         model_class = Answer
 
     response = fields.Str(required=True, description=("The response to the question."))

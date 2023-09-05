@@ -1,3 +1,4 @@
+"""Question handler."""
 from aries_cloudagent.messaging.base_handler import BaseHandler
 from aries_cloudagent.messaging.request_context import RequestContext
 from aries_cloudagent.messaging.responder import BaseResponder
