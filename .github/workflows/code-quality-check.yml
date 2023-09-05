@@ -22,3 +22,5 @@ jobs:
         with:
           src: "./acapy_plugin_qa"
       - uses: chartboost/ruff-action@v1
+        with:
+          src: "./acapy_plugin_qa"
