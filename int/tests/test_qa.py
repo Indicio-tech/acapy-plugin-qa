@@ -46,7 +46,7 @@ async def test_send_question_receive_answer(
     response = await echo.get_message(connection)
 
     assert response["@type"] == (
-        "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/answer"
+        "https://didcomm.org/questionanswer/1.0/answer"
     )
     assert response["response"] == "yes"
 
@@ -80,7 +80,7 @@ async def test_receive_question(
 
     response = await echo.get_message(connection)
     assert response["@type"] == (
-        "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/questionanswer/1.0/question"
+        "https://didcomm.org/questionanswer/1.0/question"
     )
     thread_id = response["@id"]
     assert thread_id == question_thread_id
