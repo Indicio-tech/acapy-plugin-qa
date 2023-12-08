@@ -2,7 +2,7 @@
 name = "acapy-plugin-qa"
 version = "0.1.0"
 description = "Q&A Protocol Plugin for ACA-Py"
-authors = ["Daniel Bluhm <dbluhm@pm.me>"]
+authors = ["Colton Wolkins <colton@indicio.tech>", "Daniel Bluhm <dbluhm@pm.me>"]
 license = "Apache-2.0"
 packages = [
     { include = "acapy_plugin_qa" },
@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-aries-cloudagent = { version = "0.10.4", extras = ["askar"] } 
+aries-cloudagent = { version = "^0.11.0", extras = ["askar"] }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
